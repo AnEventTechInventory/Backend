@@ -1,0 +1,21 @@
+name: User story
+description: A user story
+labels: ["user-story"]
+projects: ["AnEventTechInventory/4"]
+body:
+  - type: input
+    id: user-type
+    attributes:
+      description: As a
+      placeholder: user
+      validations:
+        required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Also tell us, what did you expect to happen?
+      placeholder: Tell us what you see!
+      value: "A bug happened!"
+    validations:
+      required: true
