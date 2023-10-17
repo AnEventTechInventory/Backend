@@ -8,8 +8,8 @@ body:
     attributes:
       label: As a
       placeholder: user
-      validations:
-        required: true
+    validations:
+      required: true
   - type: textarea
     id: task
     attributes:
