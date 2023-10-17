@@ -3,3 +3,7 @@ description: A user story
 labels: ["user-story"]
 projects: ["AnEventTechInventory/4"]
 body:
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
