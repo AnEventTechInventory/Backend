@@ -11,11 +11,8 @@ body:
       validations:
         required: true
   - type: textarea
-    id: what-happened
+    id: task
     attributes:
-      label: What happened?
-      description: Also tell us, what did you expect to happen?
-      placeholder: Tell us what you see!
-      value: "A bug happened!"
+      description: I like to
     validations:
       required: true
