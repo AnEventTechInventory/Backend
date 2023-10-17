@@ -3,16 +3,3 @@ description: A user story
 labels: ["user-story"]
 projects: ["AnEventTechInventory/4"]
 body:
-  - type: input
-    id: user-type
-    attributes:
-      label: As a
-      placeholder: user
-    validations:
-      required: true
-  - type: textarea
-    id: task
-    attributes:
-      label: I like to
-    validations:
-      required: true
