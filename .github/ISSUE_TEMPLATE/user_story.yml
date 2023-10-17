@@ -6,7 +6,7 @@ body:
   - type: input
     id: user-type
     attributes:
-      description: As a
+      label: As a
       placeholder: user
       validations:
         required: true
