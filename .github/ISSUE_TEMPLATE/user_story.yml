@@ -13,6 +13,6 @@ body:
   - type: textarea
     id: task
     attributes:
-      description: I like to
+      label: I like to
     validations:
       required: true
