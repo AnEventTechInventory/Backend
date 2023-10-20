@@ -9,27 +9,42 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    env:
+      DEPLOY_SERVER: ${{ secrets.DEPLOY_SERVER }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
     steps:
       - name: Check Out Code
         uses: actions/checkout@v2
 
       - name: Build Software
         run: |
-          # Add your build commands here
-          # For example:
-          make
+          # Build your Go project
+          go build -o myapp
 
-      - name: Deploy to Remote
-        if: success()
+      - name: Create ZIP Artifact
         run: |
-          # Set up SSH key and known hosts
+          # Create a ZIP file from the build output
+          zip -r backend.zip myapp
+
+      - name: Upload Artifact
+        if: success()
+        uses: actions/upload-artifact@v2
+        with:
+          name: software-package
+          path: ./backend.zip
+
+      - name: Set up SSH
+        run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan ${{ DEPLOY_SERVER }} >> ~/.ssh/known_hosts
-            
-          # Copy the built software to the remote server
-          scp -i ~/.ssh/id_rsa <local_package_path> root@${{ DEPLOY_SERVER }}:~/apiendpoint
-          
-          # SSH into the remote server and install the software
-          ssh -i ~/.ssh/id_rsa root@${ DEPLOY_SERVER } "cd ~/apiendpoint && ./install.sh"
+          ssh-keyscan ${{ env.DEPLOY_SERVER }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to Remote
+        run: |
+          # Copy the ZIP artifact to the remote server
+          scp -i ~/.ssh/id_rsa ./backend.zip user@${{ env.DEPLOY_SERVER }}:~/backend
+
+          # SSH into the remote server and extract the ZIP file
+          ssh -i ~/.ssh/id_rsa user@${{ env.DEPLOY_SERVER }} "cd ~/backend && unzip -o backend.zip && ./install.sh"
