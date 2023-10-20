@@ -26,6 +26,7 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
+
           ssh-keyscan ${{ deploy_server }} >> ~/.ssh/known_hosts
             
           # Copy the built software to the remote server
