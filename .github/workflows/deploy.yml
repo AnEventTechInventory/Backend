@@ -9,42 +9,59 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    env:
-      DEPLOY_SERVER: ${{ secrets.DEPLOY_SERVER }}
-      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-
     steps:
       - name: Check Out Code
         uses: actions/checkout@v4.1.1
 
-      - name: Build Software
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.21.3  # Use the version you need
+
+      - name: Build Software for arm64
+        env:
+          GOARCH: arm64
+          GOARM: 7
         run: |
-          # Build your Go project
           go build -o myapp
 
-      - name: Create ZIP Artifact
+      - name: Create Dockerfile
         run: |
-          # Create a ZIP file from the build output
-          zip -r backend.zip myapp
+          cat <<EOF > Dockerfile
+          FROM alpine:latest
+          WORKDIR /app
+          COPY myapp /app/
+          EXPOSE 8080
+          CMD ["/app/myapp"]
+          EOF
+        shell: bash
 
-      - name: Upload Artifact
-        if: success()
-        uses: actions/upload-artifact@v2
-        with:
-          name: software-package
-          path: ./backend.zip
+      - name: Build Docker Image
+        run: |
+          docker build -t myapp-image .
+
+      - name: Save Docker Image as Tarball
+        run: |
+          docker save -o myapp-image.tar myapp-image
+
+      - name: Upload Docker Image to Remote Server
+        run: |
+          scp myapp-image.tar user@${{ secrets.DEPLOY_SERVER }}:~/myapp-image.tar
 
       - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan ${{ env.DEPLOY_SERVER }} >> ~/.ssh/known_hosts
+          ssh-keyscan ${{ secrets.DEPLOY_SERVER }} >> ~/.ssh/known_hosts
 
-      - name: Deploy to Remote
+      - name: Deploy on Remote Server
         run: |
-          # Copy the ZIP artifact to the remote server
-          scp -i ~/.ssh/id_rsa ./backend.zip user@${{ env.DEPLOY_SERVER }}:~/backend
+          # SSH into the remote server and remove the old container if it exists
+          ssh -i ~/.ssh/id_rsa user@${{ secrets.DEPLOY_SERVER }} "docker rm -f myapp-container || true"
 
-          # SSH into the remote server and extract the ZIP file
-          ssh -i ~/.ssh/id_rsa user@${{ env.DEPLOY_SERVER }} "cd ~/backend && unzip -o backend.zip && ./install.sh"
+          # Load the new Docker image
+          ssh -i ~/.ssh/id_rsa user@${{ secrets.DEPLOY_SERVER }} "docker load -i ~/myapp-image.tar"
+
+          # Run the Docker container with the new image on the remote server
+          ssh -i ~/.ssh/id_rsa user@${{ secrets.DEPLOY_SERVER }} "docker run -d -p 8080:8080 --name myapp-container myapp-image"
