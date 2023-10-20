@@ -27,7 +27,7 @@ func loggerStart() {
 		log.Fatal(err)
 	}
 	if err != nil {
-		_, err := fmt.Fprintln(os.Stdout, "Error opening log file: %v", err)
+		_, err := fmt.Fprintln(os.Stderr, "Error opening log file: %v\n", err)
 		if err != nil {
 			return
 		}
