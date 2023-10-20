@@ -23,7 +23,7 @@ jobs:
           GOARCH: arm64
           GOARM: 7
         run: |
-          go build -o myapp$(go env GOEXE) ./src
+          go build -o myapp$(go env GOEXE)
 
       - name: Create Dockerfile
         run: |

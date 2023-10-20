@@ -27,7 +27,10 @@ func loggerStart() {
 		log.Fatal(err)
 	}
 	if err != nil {
-		log.Fatalf("Error opening log file: %v", err)
+		_, err := fmt.Fprintln(os.Stderr, "Error opening log file: %v\n", err)
+		if err != nil {
+			return
+		}
 		os.Exit(1) // Exit the program with a non-zero exit code
 	}
 
