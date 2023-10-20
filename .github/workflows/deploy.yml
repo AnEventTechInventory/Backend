@@ -26,10 +26,10 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan ${{ DEPLOY_SERVER }} >> ~/.ssh/known_hosts
+          ssh-keyscan $DEPLOY_SERVER >> ~/.ssh/known_hosts
             
           # Copy the built software to the remote server
-          scp -i ~/.ssh/id_rsa <local_package_path> root@${{ DEPLOY_SERVER }}:~/apiendpoint
+          scp -i ~/.ssh/id_rsa <local_package_path> root@$DEPLOY_SERVER:~/apiendpoint
           
           # SSH into the remote server and install the software
-          ssh -i ~/.ssh/id_rsa root@${ DEPLOY_SERVER } "cd ~/apiendpoint && ./install.sh"
+          ssh -i ~/.ssh/id_rsa root@DEPLOY_SERVER "cd ~/apiendpoint && ./install.sh"
