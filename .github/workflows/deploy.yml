@@ -54,10 +54,10 @@ jobs:
       - name: Deploy on Remote Server
         run: |
           # SSH into the remote server and remove the old container if it exists
-          ssh -i ~/.ssh/id_rsa user@${{ secrets.DEPLOY_SERVER }} "docker rm -f myapp-container || true"
+          ssh -i ~/.ssh/id_rsa 12xx12@${{ secrets.DEPLOY_SERVER }} "docker rm -f myapp-container || true"
 
           # Load the new Docker image
-          ssh -i ~/.ssh/id_rsa user@${{ secrets.DEPLOY_SERVER }} "docker load -i ~/myapp-image.tar"
+          ssh -i ~/.ssh/id_rsa 12xx12@${{ secrets.DEPLOY_SERVER }} "docker load -i ~/myapp-image.tar"
 
           # Run the Docker container with the new image on the remote server
-          ssh -i ~/.ssh/id_rsa user@${{ secrets.DEPLOY_SERVER }} "docker run -d -p 8080:8080 --name myapp-container myapp-image"
+          ssh -i ~/.ssh/id_rsa 12xx12@${{ secrets.DEPLOY_SERVER }} "docker run -d -p 8080:8080 --name myapp-container myapp-image"
