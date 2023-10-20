@@ -1,4 +1,4 @@
-module github.com/AnEventTechInventory/Backend/v2
+module github.com/AnEventTechInventory/Backend
 
 go 1.21.3
 
