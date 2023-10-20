@@ -15,7 +15,7 @@ func main() {
 	go func() {
 		<-sigChan
 		// Perform graceful shutdown or cleanup actions here
-		StopServer()
+		stopServer()
 		// For example, save data, close connections, etc.
 		// Then, exit the application
 		os.Exit(0)
