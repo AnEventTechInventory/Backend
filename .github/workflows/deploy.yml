@@ -9,22 +9,31 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    env:
-      DEPLOY_SERVER: ${{ secrets.DEPLOY_SERVER }}
-      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-
     steps:
       - name: Check Out Code
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v2  # Update to the latest version
 
-      - name: Build Software
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16  # Use the version you need
+
+      - name: Copy install.sh
         run: |
-          # Build your Go project
+          # Copy the install.sh script to the project directory
+          cp install.sh myapp/
+
+      - name: Build Software for arm64
+        env:
+          GOARCH: arm64
+          GOARM: 7  # Change to the appropriate ARM version if needed
+        run: |
+          # Build your Go project for arm64
           go build -o myapp
 
       - name: Create ZIP Artifact
         run: |
-          # Create a ZIP file from the build output
+          # Create a ZIP file from the build output, including the install.sh script
           zip -r backend.zip myapp
 
       - name: Upload Artifact
@@ -39,12 +48,12 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan ${{ env.DEPLOY_SERVER }} >> ~/.ssh/known_hosts
+          ssh-keyscan ${{ secrets.DEPLOY_SERVER }} >> ~/.ssh/known_hosts
 
       - name: Deploy to Remote
         run: |
           # Copy the ZIP artifact to the remote server
-          scp -i ~/.ssh/id_rsa ./backend.zip user@${{ env.DEPLOY_SERVER }}:~/backend
+          scp -i ~/.ssh/id_rsa ./backend.zip user@${{ secrets.DEPLOY_SERVER }}:~/backend
 
           # SSH into the remote server and extract the ZIP file
-          ssh -i ~/.ssh/id_rsa user@${{ env.DEPLOY_SERVER }} "cd ~/backend && unzip -o backend.zip && ./install.sh"
+          ssh -i ~/.ssh/id_rsa user@${{ secrets.DEPLOY_SERVER }} "cd ~/backend && unzip -o backend.zip && ./install.sh"
