@@ -16,14 +16,18 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.21.3  # Use the version you need
+          go-version: 1.16  # Use the version you need
+
+      - name: Copy install.sh
+        run: |
+          cp install.sh myapp/
 
       - name: Build Software for arm64
         env:
           GOARCH: arm64
           GOARM: 7
         run: |
-          go build -o myapp$(go env GOEXE)
+          go build -o myapp
 
       - name: Create Dockerfile
         run: |
@@ -46,18 +50,29 @@ jobs:
 
       - name: Set up SSH
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          # Install sshpass to provide the password for the private key
+          sudo apt-get update
+          sudo apt-get install -y sshpass
+
+          # Use sshpass to provide the password for the private key
+          sshpass -p "${{ secrets.SSH_PRIVATE_KEY_PASSWORD }}" scp ~/.ssh/id_rsa 12xx12@${{ secrets.DEPLOY_SERVER }}:~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan ${{ secrets.DEPLOY_SERVER }} >> ~/.ssh/known_hosts
+          
+      - name: Upload Docker Image to Remote Server
+        run: |
+          scp myapp-image.tar user@${{ secrets.DEPLOY_SERVER }}:~/myapp-image.tar
+          
 
       - name: Deploy on Remote Server
         run: |
           # SSH into the remote server and remove the old container if it exists
           ssh -i ~/.ssh/id_rsa 12xx12@${{ secrets.DEPLOY_SERVER }} "docker rm -f myapp-container || true"
 
-          # Load the new Docker image
-          ssh -i ~/.ssh/id_rsa 12xx12@${{ secrets.DEPLOY_SERVER }} "docker load -i ~/myapp-image.tar"
+          # SSH into the remote server and load the Docker image
+          sshpass -p "${{ secrets.SSH_PRIVATE_KEY_PASSWORD }}" ssh -i ~/.ssh/id_rsa 12xx12@${{ secrets.DEPLOY_SERVER }} "docker load -i ~/myapp-image.tar"
 
           # Run the Docker container with the new image on the remote server
-          ssh -i ~/.ssh/id_rsa 12xx12@${{ secrets.DEPLOY_SERVER }} "docker run -d -p 8080:8080 --name myapp-container myapp-image"
+          sshpass -p "${{ secrets.SSH_PRIVATE_KEY_PASSWORD }}" ssh -i ~/.ssh/id_rsa 12xx12@${{ secrets.DEPLOY_SERVER }} "docker run -d -p 8080:8080 --name myapp-container myapp-image"
+
+
