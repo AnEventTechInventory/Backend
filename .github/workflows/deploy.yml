@@ -18,10 +18,6 @@ jobs:
         with:
           go-version: 1.16  # Use the version you need
 
-      - name: Copy install.sh
-        run: |
-          cp install.sh myapp/
-
       - name: Build Software for arm64
         env:
           GOARCH: arm64
