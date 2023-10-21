@@ -57,7 +57,7 @@ jobs:
           
       - name: Upload Docker Image to Remote Server
         run: |
-          sshpass -p "${{ secrets.SSH_PRIVATE_KEY_PASSWORD }}" scp myapp-image.tar user@${{ secrets.DEPLOY_SERVER }}:~/myapp-image.tar
+          sshpass -p "${{ secrets.SSH_PRIVATE_KEY_PASSWORD }}" scp myapp-image.tar 12xx12@${{ secrets.DEPLOY_SERVER }}:~/myapp-image.tar
           
 
       - name: Deploy on Remote Server
