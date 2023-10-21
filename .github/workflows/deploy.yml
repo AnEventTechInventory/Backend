@@ -48,10 +48,6 @@ jobs:
         run: |
           docker save -o myapp-image.tar myapp-image
 
-      - name: Upload Docker Image to Remote Server
-        run: |
-          scp myapp-image.tar 12xx12@${{ secrets.DEPLOY_SERVER }}:~/myapp-image.tar
-
       - name: Set up SSH
         run: |
           # Install sshpass to provide the password for the private key
@@ -62,11 +58,21 @@ jobs:
           sshpass -p "${{ secrets.SSH_PRIVATE_KEY_PASSWORD }}" scp ~/.ssh/id_rsa 12xx12@${{ secrets.DEPLOY_SERVER }}:~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan ${{ secrets.DEPLOY_SERVER }} >> ~/.ssh/known_hosts
+          
+      - name: Upload Docker Image to Remote Server
+        run: |
+          scp myapp-image.tar user@${{ secrets.DEPLOY_SERVER }}:~/myapp-image.tar
+          
 
       - name: Deploy on Remote Server
         run: |
+          # SSH into the remote server and remove the old container if it exists
+          ssh -i ~/.ssh/id_rsa 12xx12@${{ secrets.DEPLOY_SERVER }} "docker rm -f myapp-container || true"
+
           # SSH into the remote server and load the Docker image
           sshpass -p "${{ secrets.SSH_PRIVATE_KEY_PASSWORD }}" ssh -i ~/.ssh/id_rsa 12xx12@${{ secrets.DEPLOY_SERVER }} "docker load -i ~/myapp-image.tar"
 
           # Run the Docker container with the new image on the remote server
           sshpass -p "${{ secrets.SSH_PRIVATE_KEY_PASSWORD }}" ssh -i ~/.ssh/id_rsa 12xx12@${{ secrets.DEPLOY_SERVER }} "docker run -d -p 8080:8080 --name myapp-container myapp-image"
+
+
