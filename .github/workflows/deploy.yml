@@ -46,12 +46,8 @@ jobs:
 
       - name: Set up SSH
         run: |
-          # Install sshpass to provide the password for the private key
-          sudo apt-get update
-          sudo apt-get install -y sshpass
-
-          # Use sshpass to provide the password for the private key
-          sshpass -p "${{ secrets.SSH_PRIVATE_KEY_PASSWORD }}" scp ~/.ssh/id_rsa 12xx12@${{ secrets.DEPLOY_SERVER }}:~/.ssh/id_rsa
+          # write the private key used to SSH into the remote server to a file
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan ${{ secrets.DEPLOY_SERVER }} >> ~/.ssh/known_hosts
           
