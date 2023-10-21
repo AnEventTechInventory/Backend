@@ -46,9 +46,13 @@ jobs:
 
       - name: Set up SSH
         run: |
+          # create a directory and copy the private key into it
+          mkdir -p ~/.ssh
           # write the private key used to SSH into the remote server to a file
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          # make sure only the current user can read the private key
           chmod 600 ~/.ssh/id_rsa
+          # add the remote server to the list of known hosts
           ssh-keyscan ${{ secrets.DEPLOY_SERVER }} >> ~/.ssh/known_hosts
           
       - name: Upload Docker Image to Remote Server
