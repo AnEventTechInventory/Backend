@@ -21,7 +21,7 @@ func runHttpServer() {
 	err := r.SetTrustedProxies([]string{"127.0.0.1", "::1"})
 	if err != nil {
 		Logger.Fatal(err)
-		// Exit on error
+		return
 	}
 
 	r.GET("/ping", func(c *gin.Context) {
@@ -29,5 +29,9 @@ func runHttpServer() {
 			"message": "pong",
 		})
 	})
-	r.Run(":" + port)
+	runErr := r.Run(":" + port)
+	if runErr != nil {
+		Logger.Fatal(runErr)
+		return
+	}
 }
