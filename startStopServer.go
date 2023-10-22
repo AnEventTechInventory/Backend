@@ -6,11 +6,19 @@ import (
 	"syscall"
 )
 
+var DataFolder = "data"
+
 func startServer() {
 	// Parse command-line arguments
 	parseArgs()
 
-	loggerStart()
+	// Check if the data folder is present
+	if _, err := os.Stat(DataFolder); os.IsNotExist(err) {
+		// Create the data folder if it doesn't exist
+		os.Mkdir(DataFolder, os.ModePerm)
+	}
+
+	initLogger()
 
 	Logger.Println("Starting the application...")
 
@@ -27,14 +35,6 @@ func startServer() {
 		// Then, exit the application
 		os.Exit(0)
 	}()
-
-	// Check if the data folder is present
-	DataFolder := "data"
-	if _, err := os.Stat(DataFolder); os.IsNotExist(err) {
-		// Create the data folder if it doesn't exist
-		Logger.Println("Creating data folder...")
-		os.Mkdir(DataFolder, os.ModePerm)
-	}
 }
 
 func stopServer() {
