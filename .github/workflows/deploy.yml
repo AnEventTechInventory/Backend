@@ -73,4 +73,3 @@ jobs:
           ssh -i ~/.ssh/id_rsa 12xx12@${{ secrets.DEPLOY_SERVER }} "docker run -d -p 5678:5678 -v ./data:/app/data --name myapp-container myapp-image"
 
 
-
