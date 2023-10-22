@@ -15,7 +15,7 @@ func initDatabase() {
 	databaseUser := os.Getenv("DB_USERNAME")
 	databasePassword := os.Getenv("DB_PASSWORD")
 
-	dsn := fmt.Sprintf("%v:%v@tcp(localhost:3306)/inventory?charset=utf8mb4&parseTime=True&loc=Local", databaseUser, databasePassword)
+	dsn := fmt.Sprintf("%v:%v@tcp(10.0.0.2:3306)/inventory?charset=utf8mb4&parseTime=True&loc=Local", databaseUser, databasePassword)
 
 	Database, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
