@@ -39,5 +39,6 @@ func startServer() {
 }
 
 func stopServer() {
+	Database.Close()
 	Logger.Println("Stopping the application...")
 }
