@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/AnEventTechInventory/Backend/api"
 	"github.com/gin-gonic/gin"
 	"os"
 )
@@ -20,7 +21,6 @@ func runHttpServer() {
 	r.Use(gin.LoggerWithConfig(gin.LoggerConfig{
 		Output: Logger.Writer(),
 		Formatter: func(params gin.LogFormatterParams) string {
-			// Customize the log format if needed
 			return fmt.Sprintf("[%s] %s %s %s %d %s\n",
 				params.TimeStamp.Format("2006/01/02 - 15:04:05"),
 				params.Method,
@@ -39,11 +39,7 @@ func runHttpServer() {
 		return
 	}
 
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
+	api.AddAllRoutes(r)
 
 	runErr := r.Run(":" + port)
 	if runErr != nil {

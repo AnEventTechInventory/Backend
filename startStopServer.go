@@ -19,6 +19,7 @@ func startServer() {
 	}
 
 	initLogger()
+	initDatabase()
 
 	Logger.Println("Starting the application...")
 
