@@ -31,7 +31,7 @@ jobs:
           FROM alpine:latest
           WORKDIR /app
           COPY myapp /app/
-          EXPOSE 8080
+          EXPOSE 5678
           CMD ["/app/myapp"]
           EOF
         shell: bash
@@ -69,6 +69,7 @@ jobs:
           ssh -i ~/.ssh/id_rsa 12xx12@${{ secrets.DEPLOY_SERVER }} "docker load -i ~/myapp-image.tar"
 
           # Run the Docker container with the new image on the remote server
-          ssh -i ~/.ssh/id_rsa 12xx12@${{ secrets.DEPLOY_SERVER }} "docker run -d -p 8080:8080 --name myapp-container myapp-image"
+          ssh -i ~/.ssh/id_rsa 12xx12@${{ secrets.DEPLOY_SERVER }} "docker run -d -p 5678:5678 -v ./data:/app/data --name myapp-container myapp-image"
+
 
 
