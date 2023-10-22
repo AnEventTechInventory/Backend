@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/AnEventTechInventory/Backend/requests"
+	"github.com/AnEventTechInventory/Backend/api"
 	"github.com/gin-gonic/gin"
 	"os"
 )
@@ -39,7 +39,7 @@ func runHttpServer() {
 		return
 	}
 
-	requests.AddAllRoutes(r)
+	api.AddAllRoutes(r)
 
 	runErr := r.Run(":" + port)
 	if runErr != nil {
