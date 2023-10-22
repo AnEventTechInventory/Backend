@@ -1,4 +1,4 @@
-name: Go Test and Build for ARM
+name: Pull Request Check
 
 on:
   pull_request:
@@ -38,4 +38,4 @@ jobs:
       - name: Build Application for ARM
         run: |
           export GIN_MODE=release
-          env GOARCH=arm go build -o myapp-arm ./cmd/myapp
+          env GOARCH=arm go build -o myapp
