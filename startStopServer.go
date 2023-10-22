@@ -15,7 +15,10 @@ func startServer() {
 	// Check if the data folder is present
 	if _, err := os.Stat(DataFolder); os.IsNotExist(err) {
 		// Create the data folder if it doesn't exist
-		os.Mkdir(DataFolder, os.ModePerm)
+		err := os.Mkdir(DataFolder, os.ModePerm)
+		if err != nil {
+			return
+		}
 	}
 
 	initLogger()
@@ -39,6 +42,11 @@ func startServer() {
 }
 
 func stopServer() {
-	Database.Close()
+	dbInstance, _ := Database.DB()
+	err := dbInstance.Close()
+	if err != nil {
+		Logger.Printf("There was an error closing the database connection:%v\n", err)
+		return
+	}
 	Logger.Println("Stopping the application...")
 }
