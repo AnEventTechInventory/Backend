@@ -27,6 +27,14 @@ func startServer() {
 		// Then, exit the application
 		os.Exit(0)
 	}()
+
+	// Check if the data folder is present
+	DataFolder := "data"
+	if _, err := os.Stat(DataFolder); os.IsNotExist(err) {
+		// Create the data folder if it doesn't exist
+		Logger.Println("Creating data folder...")
+		os.Mkdir(DataFolder, os.ModePerm)
+	}
 }
 
 func stopServer() {
