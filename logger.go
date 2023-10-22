@@ -2,46 +2,39 @@ package main
 
 import (
 	"fmt"
-	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var Logger *log.Logger
 
-func loggerStart() {
+func initLogger() {
+	logDir := filepath.Join(DataFolder, "log")
 
-	// if the log directory does not exist, create it
-	if _, err := os.Stat("log"); os.IsNotExist(err) {
-		err := os.Mkdir("log", 0755)
-		if err != nil {
+	// If the log directory does not exist, create it
+	if _, err := os.Stat(logDir); os.IsNotExist(err) {
+		if err := os.Mkdir(logDir, 0755); err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	logFileName := filepath.Join("log", fmt.Sprintf("app-%s.log", time.Now().Format("2006-01-02-12H-04M-05S")))
+	logFileName := filepath.Join(logDir, fmt.Sprintf("app-%s.log", time.Now().Format("2006-01-02-15-04-05")))
 	logFile, err := os.Create(logFileName)
 	if err != nil {
-		log.Fatal(err)
-	}
-	if err != nil {
-		_, err := fmt.Fprintf(os.Stderr, "Error opening log file: %v\n\n", err)
-		if err != nil {
-			return
-		}
-		os.Exit(1) // Exit the program with a non-zero exit code
+		log.Fatalf("Error opening log file: %v\n", err)
 	}
 
-	// Create a multi-writer to write to both the file and os.Stdout (terminal)
-	multiWriter := io.MultiWriter(logFile, os.Stdout)
+	// Create a new Logrus logger instance
+	Logger = log.New()
+	Logger.Out = logFile // Set the output to the log file
 
-	// Create a logger with a prefix and flags
-
+	// If Args.verbose is true, set the log level to Debug
 	if Args.verbose {
-		Logger = log.New(multiWriter, "", log.Lshortfile|log.Ldate|log.Ltime)
+		Logger.SetLevel(log.DebugLevel)
 	} else {
-		Logger = log.New(multiWriter, "", log.Ldate|log.Ltime)
+		Logger.SetLevel(log.DebugLevel)
 	}
 }
