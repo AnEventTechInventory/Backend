@@ -23,6 +23,7 @@ jobs:
           GOARCH: arm64
           GOARM: 7
         run: |
+          export GIN_MODE=release # set the mode of gin to release
           go build -o myapp
 
       - name: Create Dockerfile
