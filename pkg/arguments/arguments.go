@@ -1,4 +1,4 @@
-package main
+package arguments
 
 import (
 	"flag"
@@ -7,10 +7,10 @@ import (
 var Args args
 
 type args struct {
-	verbose bool
+	Verbose bool
 }
 
-func parseArgs() {
+func ParseArgs() {
 	// Define a boolean flag named "verbose" with a default value of false,
 	// a brief description, and a shorthand "-v".
 	var verbose bool
@@ -21,6 +21,6 @@ func parseArgs() {
 	flag.Parse()
 
 	Args = args{
-		verbose: verbose,
+		Verbose: verbose,
 	}
 }

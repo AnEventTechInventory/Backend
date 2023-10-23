@@ -1,18 +1,25 @@
-package main
+package logger
 
 import (
 	"fmt"
+	"github.com/AnEventTechInventory/Backend/pkg/arguments"
+	"github.com/AnEventTechInventory/Backend/pkg/configConstants"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
 	"time"
-
-	log "github.com/sirupsen/logrus"
 )
 
 var Logger *log.Logger
 
-func initLogger() {
-	logDir := filepath.Join(DataFolder, "log")
+func InitLogger() {
+	// Check if the logger was already initialized
+	if Logger != nil {
+		Logger.Println("Logger already initialized")
+		return
+	}
+
+	logDir := filepath.Join(configConstants.DataFolder, "log")
 
 	// If the log directory does not exist, create it
 	if _, err := os.Stat(logDir); os.IsNotExist(err) {
@@ -32,9 +39,11 @@ func initLogger() {
 	Logger.Out = logFile // Set the output to the log file
 
 	// If Args.verbose is true, set the log level to Debug
-	if Args.verbose {
+	if arguments.Args.Verbose {
 		Logger.SetLevel(log.DebugLevel)
 	} else {
 		Logger.SetLevel(log.DebugLevel)
 	}
+
+	Logger.Println("Logger initialized")
 }

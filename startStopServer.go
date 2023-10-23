@@ -1,30 +1,35 @@
 package main
 
 import (
+	"github.com/AnEventTechInventory/Backend/pkg/arguments"
+	"github.com/AnEventTechInventory/Backend/pkg/configConstants"
+	"github.com/AnEventTechInventory/Backend/pkg/database"
+	"github.com/AnEventTechInventory/Backend/pkg/logger"
 	"os"
 	"os/signal"
 	"syscall"
 )
 
-var DataFolder = "data"
-
 func startServer() {
 	// Parse command-line arguments
-	parseArgs()
+	arguments.ParseArgs()
 
 	// Check if the data folder is present
-	if _, err := os.Stat(DataFolder); os.IsNotExist(err) {
+	if _, err := os.Stat(configConstants.DataFolder); os.IsNotExist(err) {
 		// Create the data folder if it doesn't exist
-		err := os.Mkdir(DataFolder, os.ModePerm)
+		err := os.Mkdir(configConstants.DataFolder, os.ModePerm)
 		if err != nil {
 			return
 		}
 	}
 
-	initLogger()
-	initDatabase()
+	logger.Logger.Println("Starting the application...")
 
-	Logger.Println("Starting the application...")
+	logger.InitLogger()
+	if !database.InitDatabase() {
+		logger.Logger.Println("Failed to initialize database")
+		return
+	}
 
 	// Create a channel to listen for signals
 	sigChan := make(chan os.Signal, 1)
@@ -42,11 +47,11 @@ func startServer() {
 }
 
 func stopServer() {
-	dbInstance, _ := Database.DB()
+	dbInstance, _ := database.Database.DB()
 	err := dbInstance.Close()
 	if err != nil {
-		Logger.Printf("There was an error closing the database connection:%v\n", err)
+		logger.Logger.Printf("There was an error closing the database connection:%v\n", err)
 		return
 	}
-	Logger.Println("Stopping the application...")
+	logger.Logger.Println("Stopping the application...")
 }
