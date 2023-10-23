@@ -39,11 +39,11 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t myapp-image .
+          docker build -t myapp-image:latest .
 
       - name: Save Docker Image as Tarball
         run: |
-          docker save -o myapp-image.tar myapp-image
+          docker save -o myapp-image.tar myapp-image:latest
 
       - name: Set up SSH
         run: |

@@ -1,10 +1,10 @@
 version: '3'
 services:
   myapp:
-    image: myapp-image
+    image: myapp-image:latest
     build:
       context: .
-    container_name: myapp-container
+    container_name: myapp
     ports:
       - "5678:5678"
     volumes:
@@ -19,7 +19,7 @@ services:
 
   mysql:
     image: mysql:latest
-    container_name: mysql-container
+    container_name: mysql
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: inventory
