@@ -1,7 +1,7 @@
 package api
 
 import (
-	v1 "github.com/AnEventTechInventory/Backend/api/v1"
+	"github.com/AnEventTechInventory/Backend/pkg/api/v1"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"

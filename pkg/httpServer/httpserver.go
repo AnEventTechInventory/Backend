@@ -2,7 +2,7 @@ package httpServer
 
 import (
 	"fmt"
-	"github.com/AnEventTechInventory/Backend/api"
+	"github.com/AnEventTechInventory/Backend/pkg/api"
 	"github.com/AnEventTechInventory/Backend/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"os"
