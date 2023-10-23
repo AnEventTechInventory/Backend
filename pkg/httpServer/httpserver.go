@@ -1,25 +1,26 @@
-package main
+package httpServer
 
 import (
 	"fmt"
 	"github.com/AnEventTechInventory/Backend/api"
+	"github.com/AnEventTechInventory/Backend/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"os"
 )
 
-func runHttpServer() {
+func RunHttpServer() {
 
 	port := os.Getenv("PORT")
 
 	if port == "" {
 		port = "5678"
-		Logger.Printf("Defaulting to port %s", port)
+		logger.Logger.Printf("Defaulting to port %s", port)
 	}
 
 	r := gin.Default()
 
 	r.Use(gin.LoggerWithConfig(gin.LoggerConfig{
-		Output: Logger.Writer(),
+		Output: logger.Logger.Writer(),
 		Formatter: func(params gin.LogFormatterParams) string {
 			return fmt.Sprintf("[%s] %s %s %s %d %s\n",
 				params.TimeStamp.Format("2006/01/02 - 15:04:05"),
@@ -35,7 +36,7 @@ func runHttpServer() {
 	// Add loop-back IPs to trusted proxies using the engine
 	err := r.SetTrustedProxies([]string{"::1", "127.0.0.1"})
 	if err != nil {
-		Logger.Fatal(err)
+		logger.Logger.Fatal(err)
 		return
 	}
 
@@ -43,7 +44,7 @@ func runHttpServer() {
 
 	runErr := r.Run(":" + port)
 	if runErr != nil {
-		Logger.Fatal(runErr)
+		logger.Logger.Fatal(runErr)
 		return
 	}
 }
