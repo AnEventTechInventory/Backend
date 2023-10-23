@@ -10,8 +10,8 @@ services:
     volumes:
       - ./data:/app/data
     environment:
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_USERNAME=${DB_USERNAME?error}
+      - DB_PASSWORD=${DB_PASSWORD?error}
     networks:
       - myapp-network
     depends_on:
@@ -21,7 +21,7 @@ services:
     image: mysql:latest
     container_name: mysql
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD?error}
       - MYSQL_DATABASE=inventory
     volumes:
       - mysql:/var/lib/mysql

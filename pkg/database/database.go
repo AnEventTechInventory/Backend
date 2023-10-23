@@ -15,7 +15,16 @@ func InitDatabase() bool {
 	var err error = nil
 
 	databaseUser := os.Getenv("DB_USERNAME")
+	if databaseUser == "" {
+		logger.Get().Fatalf("Database username is not set")
+		return false
+	}
+
 	databasePassword := os.Getenv("DB_PASSWORD")
+	if databasePassword == "" {
+		logger.Get().Fatalf("Database password is not set")
+		return false
+	}
 	databaseURL := "mysql"
 
 	dsn := fmt.Sprintf("%v:%v@tcp(%v:3306)/inventory?charset=utf8mb4&parseTime=True&loc=Local", databaseUser, databasePassword, databaseURL)

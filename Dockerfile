@@ -1,5 +1,5 @@
 
-FROM arm64v8/alpine:latest
+FROM golang:latest
 WORKDIR /app
 COPY myapp /app/
 EXPOSE 5678
