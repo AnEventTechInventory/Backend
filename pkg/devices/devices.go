@@ -6,6 +6,8 @@ import (
 	"github.com/AnEventTechInventory/Backend/pkg/registry"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"regexp"
+	"strings"
 )
 
 type DeviceStore interface {
@@ -42,7 +44,16 @@ func (manager *StorageManager) Add(device *registry.Device) error {
 	}
 
 	// verify that the device contents are valid
-	for _, content := range device.Contents {
+	// can only a list of valid uuids followed by exactly one ', ' or be the end
+	match, err := regexp.Match(`^([a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}, )*[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}$`, []byte(device.Contents))
+	if err != nil {
+		return err
+	}
+	if !match {
+		return database.InsertError{ErrorMessage: "Device contents must be a list of valid uuids separated by exactly one ', '"}
+	}
+
+	for _, content := range strings.Split(device.Contents, ", ") {
 		// check if the content ids already exist
 		manager.db.Find(&registry.Device{}, "id = ?", content)
 		if errors.Is(manager.db.Error, gorm.ErrRecordNotFound) {
