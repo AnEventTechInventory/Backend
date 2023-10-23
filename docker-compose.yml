@@ -20,7 +20,6 @@ services:
     image: mysql:latest
     container_name: mysql
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD?error}
       - MYSQL_DATABASE=inventory
     volumes:
       - mysql:/var/lib/mysql

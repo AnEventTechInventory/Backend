@@ -9,10 +9,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    env:
-      DB_USERNAME: ${{ secrets.DB_USERNAME }}
-      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-
     steps:
       - name: Check Out Code
         uses: actions/checkout@v4.1.1
@@ -84,5 +80,8 @@ jobs:
 
             # Start the Docker Compose stack
             docker-compose up -d
+            
+            # Remove the build artifact
+            rm -rf ~/build-artifact.zip
           EOF
         working-directory: ${{ github.workspace }}
