@@ -77,3 +77,13 @@ jobs:
 
           # Run the Docker container with the new image on the remote server
           ssh -i ~/.ssh/id_rsa 12xx12@${{ secrets.DEPLOY_SERVER }} "docker run -d -p 5678:5678 -v ./data:/app/data --name myapp-container -e DB_USERNAME=$DB_USERNAME -e DB_PASSWORD=$DB_PASSWORD myapp-image"
+
+      - name: Check if Container is Running
+        run: |
+          # SSH into the remote server and check if the container is running
+          if ssh -i ~/.ssh/id_rsa 12xx12@${{ secrets.DEPLOY_SERVER }} "docker ps | grep myapp-container"; then
+            echo "Container is running."
+          else
+            echo "Container is not running."
+            exit 1  # You can choose to fail the workflow if the container is not running
+          fi
