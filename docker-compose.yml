@@ -9,9 +9,8 @@ services:
       - "5678:5678"
     volumes:
       - ./data:/app/data
-    environment:
-      - DB_USERNAME=${DB_USERNAME?error}
-      - DB_PASSWORD=${DB_PASSWORD?error}
+    env_file:
+      - .env
     networks:
       - myapp-network
     depends_on:
@@ -27,6 +26,8 @@ services:
       - mysql:/var/lib/mysql
     networks:
       - myapp-network
+    env_file:
+      - .env
 
 networks:
   myapp-network:
