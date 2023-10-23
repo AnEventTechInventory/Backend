@@ -1,7 +1,6 @@
 package database
 
 import (
-	"errors"
 	"fmt"
 	"github.com/AnEventTechInventory/Backend/pkg/logger"
 	"github.com/AnEventTechInventory/Backend/pkg/registry"
@@ -20,23 +19,23 @@ func InitDatabase() bool {
 
 	dsn := fmt.Sprintf("%v:%v@tcp(10.0.0.2:3306)/inventory?charset=utf8mb4&parseTime=True&loc=Local", databaseUser, databasePassword)
 
+	logger.Get().Println("Starting database...")
+
 	Database, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		logger.Logger.Fatal(err)
+		logger.Get().Fatal(err)
 		return false
 	}
 
 	// Migrate the schema
 	err = Database.AutoMigrate(&registry.Device{})
 	if err != nil {
-		logger.Logger.Fatal(err)
+		logger.Get().Fatal(err)
 		return false
 	}
-	logger.Logger.Println("Database started successfully")
+	logger.Get().Println("Database started successfully")
 	return true
 }
-
-var MissingError = errors.New("no database connection")
 
 type TableError struct {
 	TableName string
