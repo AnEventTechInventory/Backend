@@ -27,7 +27,7 @@ func InitDatabase() bool {
 	}
 	databaseURL := "mysql"
 
-	fmt.Sprintf("%v : %v", databaseUser, databasePassword)
+	fmt.Sprintf("_ %v _ %v _", databaseUser, databasePassword)
 
 	dsn := fmt.Sprintf("%v:%v@tcp(%v:3306)/inventory?charset=utf8mb4&parseTime=True&loc=Local", databaseUser, databasePassword, databaseURL)
 
