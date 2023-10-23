@@ -2,20 +2,27 @@ package logger
 
 import (
 	"fmt"
-	"github.com/AnEventTechInventory/Backend/pkg/arguments"
 	"github.com/AnEventTechInventory/Backend/pkg/configConstants"
 	log "github.com/sirupsen/logrus"
+	"io"
 	"os"
 	"path/filepath"
 	"time"
 )
 
-var Logger *log.Logger
+var logger *log.Logger = nil
+
+func Get() *log.Logger {
+	if logger == nil {
+		InitLogger()
+	}
+	return logger
+}
 
 func InitLogger() {
 	// Check if the logger was already initialized
-	if Logger != nil {
-		Logger.Println("Logger already initialized")
+	if logger != nil {
+		logger.Println("Logger already initialized")
 		return
 	}
 
@@ -24,26 +31,26 @@ func InitLogger() {
 	// If the log directory does not exist, create it
 	if _, err := os.Stat(logDir); os.IsNotExist(err) {
 		if err := os.Mkdir(logDir, 0755); err != nil {
-			log.Fatal(err)
+			_ = fmt.Sprintf("Error creating log directory: %v\n", err)
 		}
 	}
 
 	logFileName := filepath.Join(logDir, fmt.Sprintf("app-%s.log", time.Now().Format("2006-01-02-15-04-05")))
 	logFile, err := os.Create(logFileName)
 	if err != nil {
-		log.Fatalf("Error opening log file: %v\n", err)
+		_ = fmt.Sprintf("Error creating log file: %v\n", err)
 	}
 
 	// Create a new Logrus logger instance
-	Logger = log.New()
-	Logger.Out = logFile // Set the output to the log file
+	logger = log.New()
+	logger.SetOutput(io.MultiWriter(os.Stdout, logFile))
 
 	// If Args.verbose is true, set the log level to Debug
-	if arguments.Args.Verbose {
-		Logger.SetLevel(log.DebugLevel)
+	/* if arguments.Args.Verbose {
+		logger.SetLevel(log.DebugLevel)
 	} else {
-		Logger.SetLevel(log.DebugLevel)
-	}
+		logger.SetLevel(log.DebugLevel)
+	}*/
 
-	Logger.Println("Logger initialized")
+	logger.Println("Logger initialized")
 }
