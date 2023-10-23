@@ -14,7 +14,8 @@ services:
     networks:
       - myapp-network
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy  # Wait for the MySQL service to be healthy
 
   mysql:
     image: mysql:latest
@@ -27,6 +28,11 @@ services:
       - myapp-network
     env_file:
       - .env
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 networks:
   myapp-network:
