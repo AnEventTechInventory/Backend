@@ -27,6 +27,7 @@ func startServer() {
 	logger.Get().Println("Starting the application...")
 	if !database.InitDatabase() {
 		logger.Get().Println("Failed to initialize database")
+		os.Exit(-1)
 		return
 	}
 

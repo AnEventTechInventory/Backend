@@ -56,14 +56,12 @@ jobs:
         run: |
           # Create a new build artifact, for example, a ZIP file
           # Replace this with the appropriate command for your artifact
-          zip -r build-artifact.zip myapp myapp-image.tar docker-compose.yml
-        working-directory: ${{ github.workspace }}
+          zip -r build-artifact.zip myapp-image.tar docker-compose.yml
 
       - name: Upload Build Artifact to Remote Server
         run: |
           # Use scp to upload the build artifact to the remote server
           scp build-artifact.zip 12xx12@${{ secrets.DEPLOY_SERVER }}:~/build-artifact.zip
-        working-directory: ${{ github.workspace }}
 
       - name: SSH into Remote Server and Deploy
         run: |
@@ -77,6 +75,9 @@ jobs:
 
             # Navigate to the deployment directory
             cd ~/deploy
+          
+            # register new container
+            docker load -i myapp-image.tar
 
             # Start the Docker Compose stack
             docker-compose up -d
@@ -84,4 +85,3 @@ jobs:
             # Remove the build artifact
             rm -rf ~/build-artifact.zip
           EOF
-        working-directory: ${{ github.workspace }}
