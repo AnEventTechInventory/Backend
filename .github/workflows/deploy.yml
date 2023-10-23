@@ -37,19 +37,6 @@ jobs:
           # export GIN_MODE=release # set the mode of gin to release
           go build -o myapp
 
-      - name: Create Dockerfile
-        run: |
-          cat <<EOF > Dockerfile
-          FROM arm64v8/alpine:latest
-          WORKDIR /app
-          COPY myapp /app/
-          EXPOSE 5678
-          CMD ["/app/myapp"]
-          ENV DB_USERNAME=$DB_USERNAME
-          ENV DB_PASSWORD=$DB_PASSWORD
-          EOF
-        shell: bash
-
       - name: Build Docker Image
         run: |
           docker build -t myapp-image .
@@ -68,29 +55,34 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           # add the remote server to the list of known hosts
           ssh-keyscan ${{ secrets.DEPLOY_SERVER }} >> ~/.ssh/known_hosts
-          
-      - name: Upload Docker Image to Remote Server
+
+      - name: Create Build Artifact
         run: |
-          scp myapp-image.tar 12xx12@${{ secrets.DEPLOY_SERVER }}:~/myapp-image.tar
-          
+          # Create a new build artifact, for example, a ZIP file
+          # Replace this with the appropriate command for your artifact
+          zip -r build-artifact.zip myapp myapp-image.tar docker-compose.yml
+        working-directory: ${{ github.workspace }}
 
-      - name: Deploy on Remote Server
+      - name: Upload Build Artifact to Remote Server
         run: |
-          # SSH into the remote server and remove the old container if it exists
-          ssh -i ~/.ssh/id_rsa 12xx12@${{ secrets.DEPLOY_SERVER }} "docker rm -f myapp-container || true"
+          # Use scp to upload the build artifact to the remote server
+          scp build-artifact.zip 12xx12@${{ secrets.DEPLOY_SERVER }}:~/build-artifact.zip
+        working-directory: ${{ github.workspace }}
 
-          # SSH into the remote server and load the Docker image
-          ssh -i ~/.ssh/id_rsa 12xx12@${{ secrets.DEPLOY_SERVER }} "docker load -i ~/myapp-image.tar"
-
-          # Run the Docker container with the new image on the remote server
-          ssh -i ~/.ssh/id_rsa 12xx12@${{ secrets.DEPLOY_SERVER }} "docker run -d -p 5678:5678 -v ./data:/app/data --name myapp-container -e DB_USERNAME=$DB_USERNAME -e DB_PASSWORD=$DB_PASSWORD myapp-image"
-
-      - name: Check if Container is Running
+      - name: SSH into Remote Server and Deploy
         run: |
-          # SSH into the remote server and check if the container is running
-          if ssh -i ~/.ssh/id_rsa 12xx12@${{ secrets.DEPLOY_SERVER }} "docker ps | grep myapp-container"; then
-            echo "Container is running."
-          else
-            echo "Container is not running."
-            exit 1  # You can choose to fail the workflow if the container is not running
-          fi
+          # SSH into the remote server
+          ssh -i ~/.ssh/id_rsa 12xx12@${{ secrets.DEPLOY_SERVER }} << EOF
+            # Create a directory for the deployment
+            mkdir -p ~/deploy
+
+            # Unzip the build artifact
+            unzip -q -o ~/build-artifact.zip -d ~/deploy
+
+            # Navigate to the deployment directory
+            cd ~/deploy
+
+            # Start the Docker Compose stack
+            docker-compose up -d
+          EOF
+        working-directory: ${{ github.workspace }}

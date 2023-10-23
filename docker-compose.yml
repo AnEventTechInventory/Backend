@@ -1,0 +1,39 @@
+version: '3'
+services:
+  myapp:
+    image: myapp-image
+    build:
+      context: .
+    container_name: myapp-container
+    ports:
+      - "5678:5678"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+    networks:
+      - myapp-network
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:latest
+    container_name: mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: myappdb
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mysql:/var/lib/mysql
+    networks:
+      - myapp-network
+
+networks:
+  myapp-network:
+    driver: bridge
+    external: true
+
+volumes:
+  mysql:
