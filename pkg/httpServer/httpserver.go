@@ -14,13 +14,13 @@ func RunHttpServer() {
 
 	if port == "" {
 		port = "5678"
-		logger.Logger.Printf("Defaulting to port %s", port)
+		logger.Get().Printf("Defaulting to port %s", port)
 	}
 
 	r := gin.Default()
 
 	r.Use(gin.LoggerWithConfig(gin.LoggerConfig{
-		Output: logger.Logger.Writer(),
+		Output: logger.Get().Writer(),
 		Formatter: func(params gin.LogFormatterParams) string {
 			return fmt.Sprintf("[%s] %s %s %s %d %s\n",
 				params.TimeStamp.Format("2006/01/02 - 15:04:05"),
@@ -36,7 +36,7 @@ func RunHttpServer() {
 	// Add loop-back IPs to trusted proxies using the engine
 	err := r.SetTrustedProxies([]string{"::1", "127.0.0.1"})
 	if err != nil {
-		logger.Logger.Fatal(err)
+		logger.Get().Fatal(err)
 		return
 	}
 
@@ -44,7 +44,7 @@ func RunHttpServer() {
 
 	runErr := r.Run(":" + port)
 	if runErr != nil {
-		logger.Logger.Fatal(runErr)
+		logger.Get().Fatal(runErr)
 		return
 	}
 }

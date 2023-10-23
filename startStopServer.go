@@ -23,11 +23,10 @@ func startServer() {
 		}
 	}
 
-	logger.Logger.Println("Starting the application...")
-
 	logger.InitLogger()
+	logger.Get().Println("Starting the application...")
 	if !database.InitDatabase() {
-		logger.Logger.Println("Failed to initialize database")
+		logger.Get().Println("Failed to initialize database")
 		return
 	}
 
@@ -50,8 +49,8 @@ func stopServer() {
 	dbInstance, _ := database.Database.DB()
 	err := dbInstance.Close()
 	if err != nil {
-		logger.Logger.Printf("There was an error closing the database connection:%v\n", err)
+		logger.Get().Printf("There was an error closing the database connection:%v\n", err)
 		return
 	}
-	logger.Logger.Println("Stopping the application...")
+	logger.Get().Println("Stopping the application...")
 }
