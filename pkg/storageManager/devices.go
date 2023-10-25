@@ -1,13 +1,12 @@
-package devices
+package storageManager
 
 import (
 	"errors"
+	"fmt"
 	"github.com/AnEventTechInventory/Backend/pkg/database"
 	"github.com/AnEventTechInventory/Backend/pkg/registry"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"regexp"
-	"strings"
 )
 
 type DeviceStore interface {
@@ -43,29 +42,6 @@ func (manager *StorageManager) Add(device *registry.Device) error {
 		return database.InsertError{ErrorMessage: "Device quantity cannot be negative"}
 	}
 
-	// verify that the device contents are valid
-	// can only a list of valid uuids followed by exactly one ', ' or be the end
-	match, err := regexp.Match(`^([a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}, )*[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}$`, []byte(device.Contents))
-	if err != nil {
-		return err
-	}
-	if !match {
-		return database.InsertError{ErrorMessage: "Device contents must be a list of valid uuids separated by exactly one ', '"}
-	}
-
-	for _, content := range strings.Split(device.Contents, ", ") {
-		// check if the content ids already exist
-		manager.db.Find(&registry.Device{}, "id = ?", content)
-		if errors.Is(manager.db.Error, gorm.ErrRecordNotFound) {
-			return database.InsertError{ErrorMessage: "Device content id does not exist"}
-		}
-
-		// prevent circular references
-		if content == device.Id {
-			return database.InsertError{ErrorMessage: "Device cannot contain itself"}
-		}
-	}
-
 	// insert into database
 	manager.db.Create(device)
 	if manager.db.Error != nil {
@@ -81,23 +57,49 @@ func (manager *StorageManager) Get(id string) (*registry.Device, error) {
 	}
 
 	// grab the device from the database
-	var device registry.Device
-	manager.db.First(&device, "id = ?", id)
-
-	return nil, nil
+	var device *registry.Device
+	manager.db.First(device, "id = ?", id)
+	err := manager.db.Error
+	if err != nil {
+		return nil, database.QueryError{Query: fmt.Sprintf("Find device with id: %v", device.Id), ErrorMessage: err.Error()}
+	}
+	return device, nil
 }
 
 func (manager *StorageManager) List() ([]*registry.Device, error) {
-	// Todo
-	return nil, nil
+	var devices []*registry.Device
+	if err := manager.db.Find(&devices).Error; err != nil {
+		return nil, err
+	}
+	return devices, nil
 }
 
 func (manager *StorageManager) Update(device *registry.Device) error {
-	// Todo
+	// Check if device exists
+	var oldDevice *registry.Device
+	manager.db.First(oldDevice, "id = ?", device.Id)
+	if errors.Is(manager.db.Error, gorm.ErrRecordNotFound) {
+		return database.QueryError{Query: fmt.Sprintf("Find device with id: %v", device.Id), ErrorMessage: "Device does not exist"}
+	}
+	// Update
+	manager.db.Model(oldDevice).Updates(device)
+	if manager.db.Error != nil {
+		return database.UpdateError{ErrorMessage: manager.db.Error.Error()}
+	}
 	return nil
 }
 
 func (manager *StorageManager) Delete(id string) error {
-	// Todo
+	// Check if device exists
+	var device *registry.Device
+	manager.db.First(device, "id = ?", id)
+	if errors.Is(manager.db.Error, gorm.ErrRecordNotFound) {
+		return database.QueryError{Query: fmt.Sprintf("Find device with id: %v", id), ErrorMessage: "Device does not exist"}
+	}
+	// Delete
+	manager.db.Delete(device)
+	if manager.db.Error != nil {
+		return database.DeleteError{ErrorMessage: manager.db.Error.Error()}
+	}
 	return nil
 }

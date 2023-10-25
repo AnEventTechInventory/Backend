@@ -1,9 +1,9 @@
-package v1
+package api
 
 import (
 	"github.com/AnEventTechInventory/Backend/pkg/database"
-	"github.com/AnEventTechInventory/Backend/pkg/devices"
 	"github.com/AnEventTechInventory/Backend/pkg/registry"
+	"github.com/AnEventTechInventory/Backend/pkg/storageManager"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -68,24 +68,23 @@ func (handler *deviceHandler) deleteDevice(context *gin.Context) {
 }
 
 type deviceHandler struct {
-	store devices.DeviceStore
+	store storageManager.DeviceStore
 }
 
 func newDevicesHandler() *deviceHandler {
 	return &deviceHandler{
-		store: devices.NewDeviceStorageManager(database.Database),
+		store: storageManager.NewDeviceStorageManager(database.Database),
 	}
 }
 
 var devicesHandler = newDevicesHandler()
 
-func Handler(context *gin.RouterGroup) {
-
-	// Handle devices
+func RegisterDevices(context *gin.Engine) {
 	devicesGroup := context.Group("/devices")
-	devicesGroup.GET("/", devicesHandler.listDevices)
+
+	devicesGroup.GET("", devicesHandler.listDevices)
 	devicesGroup.GET("/:id", devicesHandler.getDevice)
-	devicesGroup.POST("/", devicesHandler.createDevice)
+	devicesGroup.POST("", devicesHandler.createDevice)
 	devicesGroup.PUT("/:id", devicesHandler.updateDevice)
 	devicesGroup.DELETE("/:id", devicesHandler.deleteDevice)
 

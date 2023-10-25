@@ -81,3 +81,11 @@ type UpdateError struct {
 func (e UpdateError) Error() string {
 	return fmt.Sprintf("Database update %v failed with error %v", e.Query, e.ErrorMessage)
 }
+
+type DeleteError struct {
+	ErrorMessage string
+}
+
+func (e DeleteError) Error() string {
+	return fmt.Sprintf("Database delete failed with error %v", e.ErrorMessage)
+}
