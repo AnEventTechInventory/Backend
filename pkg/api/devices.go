@@ -14,7 +14,13 @@ func (handler *deviceHandler) listDevices(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	context.JSON(http.StatusOK, list)
+
+	// if there are no devices present, return an empty list
+	if len(list) == 0 {
+		context.JSON(http.StatusOK, []string{})
+		return
+	}
+	context.JSON(http.StatusOK, jsonList)
 }
 
 func (handler *deviceHandler) getDevice(context *gin.Context) {
