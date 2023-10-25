@@ -61,6 +61,7 @@ func (handler *deviceHandler) updateDevice(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	context.Status(http.StatusOK)
 }
 
 func (handler *deviceHandler) deleteDevice(context *gin.Context) {
@@ -88,9 +89,9 @@ var devicesHandler = newDevicesHandler()
 func RegisterDevices(context *gin.Engine) {
 	devicesGroup := context.Group("/devices")
 
-	devicesGroup.GET("/", devicesHandler.listDevices)
+	devicesGroup.GET("", devicesHandler.listDevices)
 	devicesGroup.GET("/:id", devicesHandler.getDevice)
-	devicesGroup.POST("/", devicesHandler.createDevice)
+	devicesGroup.POST("", devicesHandler.createDevice)
 	devicesGroup.PUT("/:id", devicesHandler.updateDevice)
 	devicesGroup.DELETE("/:id", devicesHandler.deleteDevice)
 
