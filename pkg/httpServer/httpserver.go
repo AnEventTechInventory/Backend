@@ -48,7 +48,7 @@ func RunHttpServer() {
 	store := cookie.NewStore([]byte(os.Getenv("COOKIE_SECRET")))
 	r.Use(sessions.Sessions("mysession", store))
 	r.Use(csrf.Middleware(csrf.Options{
-		Secret: "secret123",
+		Secret: os.Getenv("CSRF_SECRET"),
 		ErrorFunc: func(c *gin.Context) {
 			c.String(400, "CSRF token mismatch")
 			c.Abort()
