@@ -20,7 +20,7 @@ func (handler *deviceHandler) listDevices(context *gin.Context) {
 		context.JSON(http.StatusOK, []string{})
 		return
 	}
-	context.JSON(http.StatusOK, jsonList)
+	context.JSON(http.StatusOK, list)
 }
 
 func (handler *deviceHandler) getDevice(context *gin.Context) {
