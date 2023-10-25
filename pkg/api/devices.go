@@ -88,9 +88,9 @@ var devicesHandler = newDevicesHandler()
 func RegisterDevices(context *gin.Engine) {
 	devicesGroup := context.Group("/devices")
 
-	devicesGroup.GET("", devicesHandler.listDevices)
+	devicesGroup.GET("/", devicesHandler.listDevices)
 	devicesGroup.GET("/:id", devicesHandler.getDevice)
-	devicesGroup.POST("", devicesHandler.createDevice)
+	devicesGroup.POST("/", devicesHandler.createDevice)
 	devicesGroup.PUT("/:id", devicesHandler.updateDevice)
 	devicesGroup.DELETE("/:id", devicesHandler.deleteDevice)
 
