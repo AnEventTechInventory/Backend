@@ -5,10 +5,22 @@ import (
 	"github.com/AnEventTechInventory/Backend/pkg/registry"
 	"github.com/AnEventTechInventory/Backend/pkg/storageManager"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"net/http"
 )
 
-func (handler *deviceHandler) listDevices(context *gin.Context) {
+type deviceRequestHandler struct {
+	requestInterface
+	store *storageManager.DeviceStorageManager
+}
+
+func newDeviceRequestHandler(db *gorm.DB) *deviceRequestHandler {
+	return &deviceRequestHandler{
+		store: storageManager.NewDeviceStorageManager(db),
+	}
+}
+
+func (handler *deviceRequestHandler) list(context *gin.Context) {
 	list, err := handler.store.List()
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -17,13 +29,13 @@ func (handler *deviceHandler) listDevices(context *gin.Context) {
 
 	// if there are no devices present, return an empty list
 	if len(list) == 0 {
-		context.JSON(http.StatusOK, gin.H{"error": "No devices present"})
+		context.Status(http.StatusNoContent)
 		return
 	}
 	context.JSON(http.StatusOK, list)
 }
 
-func (handler *deviceHandler) getDevice(context *gin.Context) {
+func (handler *deviceRequestHandler) get(context *gin.Context) {
 	id := context.Param("id")
 	device, err := handler.store.Get(id)
 	if err != nil {
@@ -33,7 +45,7 @@ func (handler *deviceHandler) getDevice(context *gin.Context) {
 	context.JSON(http.StatusOK, device)
 }
 
-func (handler *deviceHandler) createDevice(context *gin.Context) {
+func (handler *deviceRequestHandler) create(context *gin.Context) {
 	var newDevice registry.Device
 	err := context.BindJSON(&newDevice)
 	if err != nil {
@@ -46,10 +58,10 @@ func (handler *deviceHandler) createDevice(context *gin.Context) {
 		return
 	}
 	// confirm and send the new device id
-	context.JSON(http.StatusOK, gin.H{"id": newDevice.Id})
+	context.JSON(http.StatusCreated, gin.H{"id": newDevice.Id})
 }
 
-func (handler *deviceHandler) updateDevice(context *gin.Context) {
+func (handler *deviceRequestHandler) update(context *gin.Context) {
 	var newDevice registry.Device
 	err := context.BindJSON(&newDevice)
 	if err != nil {
@@ -61,38 +73,28 @@ func (handler *deviceHandler) updateDevice(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	context.Status(http.StatusOK)
+	context.Status(http.StatusAccepted)
 }
 
-func (handler *deviceHandler) deleteDevice(context *gin.Context) {
+func (handler *deviceRequestHandler) delete(context *gin.Context) {
 	id := context.Param("id")
 	err := handler.store.Delete(id)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	context.Status(http.StatusOK)
+	context.Status(http.StatusAccepted)
 }
 
-type deviceHandler struct {
-	store storageManager.DeviceStore
-}
-
-func newDevicesHandler() *deviceHandler {
-	return &deviceHandler{
-		store: storageManager.NewDeviceStorageManager(database.Database),
-	}
-}
-
-var devicesHandler = newDevicesHandler()
+var devicesRequestHandler = newDeviceRequestHandler(database.Database)
 
 func RegisterDevices(context *gin.Engine) {
 	devicesGroup := context.Group("/devices")
 
-	devicesGroup.GET("", devicesHandler.listDevices)
-	devicesGroup.GET("/:id", devicesHandler.getDevice)
-	devicesGroup.POST("", devicesHandler.createDevice)
-	devicesGroup.PUT("/:id", devicesHandler.updateDevice)
-	devicesGroup.DELETE("/:id", devicesHandler.deleteDevice)
+	devicesGroup.GET("", devicesRequestHandler.list)
+	devicesGroup.GET("/:id", devicesRequestHandler.get)
+	devicesGroup.POST("", devicesRequestHandler.create)
+	devicesGroup.PUT("/:id", devicesRequestHandler.update)
+	devicesGroup.DELETE("/:id", devicesRequestHandler.delete)
 
 }
