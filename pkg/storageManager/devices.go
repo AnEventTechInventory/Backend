@@ -14,9 +14,9 @@ type DeviceStorageManager struct {
 	db *gorm.DB
 }
 
-func NewDeviceStorageManager(db *gorm.DB) *DeviceStorageManager {
+func NewDeviceStorageManager() *DeviceStorageManager {
 	return &DeviceStorageManager{
-		db: db,
+		db: database.Database,
 	}
 }
 
@@ -24,7 +24,7 @@ func (manager *DeviceStorageManager) Add(device *registry.Device) error {
 	// Check if there is a device with the same name
 	manager.db.Find(&registry.Device{}, "name = ?", device.Name)
 	if !errors.Is(manager.db.Error, gorm.ErrRecordNotFound) {
-		return database.InsertError{ErrorMessage: "Device with the same name already exists"}
+		return errors.New("device with the same name already exists")
 	}
 	// ignore id if sent. Generate a new unique id.
 	device.Id = uuid.New().String()
@@ -37,15 +37,15 @@ func (manager *DeviceStorageManager) Add(device *registry.Device) error {
 	// insert into database
 	manager.db.Create(device)
 	if manager.db.Error != nil {
-		return database.InsertError{ErrorMessage: manager.db.Error.Error()}
+		return manager.db.Error
 	}
 	return nil
 }
 
 func (manager *DeviceStorageManager) Get(id string) (*registry.Device, error) {
 	// verify that the id is valid
-	if _, err := uuid.Parse(id); err != nil {
-		return nil, database.QueryError{ErrorMessage: "Invalid device id"}
+	if err := validateUUID(id); err != nil {
+		return nil, err
 	}
 
 	// grab the device from the database
@@ -53,7 +53,7 @@ func (manager *DeviceStorageManager) Get(id string) (*registry.Device, error) {
 	manager.db.First(device, "id = ?", id)
 	err := manager.db.Error
 	if err != nil {
-		return nil, database.QueryError{Query: fmt.Sprintf("Find device with id: %v", device.Id), ErrorMessage: err.Error()}
+		return nil, errors.New(fmt.Sprintf("Find device with id: %v. Error: %v", device.Id, err.Error()))
 	}
 	return device, nil
 }
@@ -71,7 +71,7 @@ func (manager *DeviceStorageManager) Update(device *registry.Device) error {
 	var oldDevice *registry.Device
 	manager.db.First(oldDevice, "id = ?", device.Id)
 	if errors.Is(manager.db.Error, gorm.ErrRecordNotFound) {
-		return database.QueryError{Query: fmt.Sprintf("Find device with id: %v", device.Id), ErrorMessage: "Device does not exist"}
+		return errors.New(fmt.Sprintf("Find device with id: %v. Error: Device does not exist", device.Id))
 	}
 
 	if err := device.Validate(manager.db); err != nil {
@@ -81,7 +81,7 @@ func (manager *DeviceStorageManager) Update(device *registry.Device) error {
 	// Update
 	manager.db.Model(oldDevice).Updates(device)
 	if manager.db.Error != nil {
-		return database.UpdateError{ErrorMessage: manager.db.Error.Error()}
+		return manager.db.Error
 	}
 	return nil
 }
@@ -91,12 +91,12 @@ func (manager *DeviceStorageManager) Delete(id string) error {
 	var device *registry.Device
 	manager.db.First(device, "id = ?", id)
 	if errors.Is(manager.db.Error, gorm.ErrRecordNotFound) {
-		return database.QueryError{Query: fmt.Sprintf("Find device with id: %v", id), ErrorMessage: "Device does not exist"}
+		return errors.New(fmt.Sprintf("Find device with id: %v. Error: Device does not exist", device.Id))
 	}
 	// Delete
 	manager.db.Delete(device)
 	if manager.db.Error != nil {
-		return database.DeleteError{ErrorMessage: manager.db.Error.Error()}
+		return manager.db.Error
 	}
 	return nil
 }

@@ -2,7 +2,6 @@ package registry
 
 import (
 	"errors"
-	"github.com/AnEventTechInventory/Backend/pkg/database"
 	"gorm.io/gorm"
 	"regexp"
 	"strings"
@@ -26,7 +25,7 @@ func (device *Device) VerifyContents(db *gorm.DB) error {
 		return err
 	}
 	if !match {
-		return database.InsertError{ErrorMessage: "Device contents must be a list of valid uuids separated by exactly one ', '"}
+		return errors.New("device contents must be a list of valid uuids separated by exactly one ', '")
 	}
 
 	// Verify that the device contents exists
@@ -34,12 +33,12 @@ func (device *Device) VerifyContents(db *gorm.DB) error {
 		// check if the content ids already exist
 		db.Find(&Device{}, "id = ?", content)
 		if errors.Is(db.Error, gorm.ErrRecordNotFound) {
-			return database.InsertError{ErrorMessage: "Device content id does not exist"}
+			return errors.New("device content id does not exist")
 		}
 
 		// prevent circular references
 		if content == device.Id {
-			return database.InsertError{ErrorMessage: "Device cannot contain itself"}
+			return errors.New("device cannot contain itself")
 		}
 	}
 

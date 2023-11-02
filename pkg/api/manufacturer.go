@@ -1,7 +1,6 @@
 package api
 
 import (
-	"github.com/AnEventTechInventory/Backend/pkg/database"
 	"github.com/AnEventTechInventory/Backend/pkg/registry"
 	"github.com/AnEventTechInventory/Backend/pkg/storageManager"
 	"github.com/gin-gonic/gin"
@@ -15,7 +14,7 @@ type manufacturerRequestHandler struct {
 
 func newManufacturerRequestHandler() *manufacturerRequestHandler {
 	return &manufacturerRequestHandler{
-		store: storageManager.NewManufacturerStorageManager(database.Database),
+		store: storageManager.NewManufacturerStorageManager(),
 	}
 }
 

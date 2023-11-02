@@ -13,9 +13,9 @@ type ManufacturerStorageManager struct {
 	db *gorm.DB
 }
 
-func NewManufacturerStorageManager(db *gorm.DB) *ManufacturerStorageManager {
+func NewManufacturerStorageManager() *ManufacturerStorageManager {
 	return &ManufacturerStorageManager{
-		db: db,
+		db: database.Database,
 	}
 }
 
@@ -36,28 +36,22 @@ func (manager *ManufacturerStorageManager) Add(manufacturer *registry.Manufactur
 
 	manager.db.Create(manufacturer)
 	if manager.db.Error != nil {
-		return database.InsertError{
-			ErrorMessage: manager.db.Error.Error(),
-		}
+		return manager.db.Error
 	}
 	return nil
 }
 
 func (manager *ManufacturerStorageManager) Get(id string) (*registry.Manufacturer, error) {
 	// verify that the id is valid
-	if _, err := uuid.Parse(id); err != nil {
-		return nil, database.QueryError{
-			ErrorMessage: "Invalid manufacturer id",
-		}
+	if err := validateUUID(id); err != nil {
+		return nil, err
 	}
 
 	// grab the manufacturer from the database
 	var manufacturer *registry.Manufacturer
 	manager.db.First(manufacturer, "id = ?", id)
 	if manager.db.Error != nil {
-		return nil, database.QueryError{
-			ErrorMessage: manager.db.Error.Error(),
-		}
+		return nil, manager.db.Error
 	}
 	return manufacturer, nil
 }
@@ -67,9 +61,7 @@ func (manager *ManufacturerStorageManager) List() ([]*registry.Manufacturer, err
 	var manufacturers []*registry.Manufacturer
 	manager.db.Find(&manufacturers)
 	if manager.db.Error != nil {
-		return nil, database.QueryError{
-			ErrorMessage: manager.db.Error.Error(),
-		}
+		return nil, manager.db.Error
 	}
 	return manufacturers, nil
 }
@@ -84,16 +76,12 @@ func (manager *ManufacturerStorageManager) Update(manufacturer *registry.Manufac
 
 	// Update
 	if err := manufacturer.Validate(); err != nil {
-		return database.UpdateError{
-			ErrorMessage: err.Error(),
-		}
+		return err
 	}
 
 	manager.db.Model(oldManufacturer).Updates(manufacturer)
 	if manager.db.Error != nil {
-		return database.UpdateError{
-			ErrorMessage: manager.db.Error.Error(),
-		}
+		return manager.db.Error
 	}
 	return nil
 }
@@ -108,9 +96,7 @@ func (manager *ManufacturerStorageManager) Delete(id string) error {
 	// Delete
 	manager.db.Delete(manufacturer)
 	if manager.db.Error != nil {
-		return database.DeleteError{
-			ErrorMessage: manager.db.Error.Error(),
-		}
+		return manager.db.Error
 	}
 	return nil
 }

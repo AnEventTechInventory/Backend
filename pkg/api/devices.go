@@ -1,11 +1,9 @@
 package api
 
 import (
-	"github.com/AnEventTechInventory/Backend/pkg/database"
 	"github.com/AnEventTechInventory/Backend/pkg/registry"
 	"github.com/AnEventTechInventory/Backend/pkg/storageManager"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"net/http"
 )
 
@@ -14,9 +12,9 @@ type deviceRequestHandler struct {
 	store *storageManager.DeviceStorageManager
 }
 
-func newDeviceRequestHandler(db *gorm.DB) *deviceRequestHandler {
+func newDeviceRequestHandler() *deviceRequestHandler {
 	return &deviceRequestHandler{
-		store: storageManager.NewDeviceStorageManager(db),
+		store: storageManager.NewDeviceStorageManager(),
 	}
 }
 
@@ -86,7 +84,7 @@ func (handler *deviceRequestHandler) delete(context *gin.Context) {
 	context.Status(http.StatusAccepted)
 }
 
-var devicesRequestHandler = newDeviceRequestHandler(database.Database)
+var devicesRequestHandler = newDeviceRequestHandler()
 
 func RegisterDevices(context *gin.Engine) {
 	devicesGroup := context.Group("/devices")
