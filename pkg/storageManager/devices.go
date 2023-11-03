@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/AnEventTechInventory/Backend/pkg/database"
 	"github.com/AnEventTechInventory/Backend/pkg/registry"
+	"github.com/AnEventTechInventory/Backend/pkg/util"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -27,7 +28,7 @@ func (manager *DeviceStorageManager) Add(device *registry.Device) error {
 		return errors.New("device with the same name already exists")
 	}
 	// ignore id if sent. Generate a new unique id.
-	device.Id = uuid.New().String()
+	device.Id = uuid.New()
 
 	// verify that the device is valid
 	if err := device.Validate(manager.db); err != nil {
@@ -44,7 +45,7 @@ func (manager *DeviceStorageManager) Add(device *registry.Device) error {
 
 func (manager *DeviceStorageManager) Get(id string) (*registry.Device, error) {
 	// verify that the id is valid
-	if err := validateUUID(id); err != nil {
+	if err := util.ValidateUUID(id); err != nil {
 		return nil, err
 	}
 

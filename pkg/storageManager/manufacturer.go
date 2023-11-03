@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/AnEventTechInventory/Backend/pkg/database"
 	"github.com/AnEventTechInventory/Backend/pkg/registry"
+	"github.com/AnEventTechInventory/Backend/pkg/util"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -30,7 +31,7 @@ func (manager *ManufacturerStorageManager) Add(manufacturer *registry.Manufactur
 	manufacturer.Id = uuid.New().String()
 
 	// verify manufacturer is valid
-	if err := manufacturer.Validate(); err != nil {
+	if err := manufacturer.Validate(nil); err != nil {
 		return err
 	}
 
@@ -43,7 +44,7 @@ func (manager *ManufacturerStorageManager) Add(manufacturer *registry.Manufactur
 
 func (manager *ManufacturerStorageManager) Get(id string) (*registry.Manufacturer, error) {
 	// verify that the id is valid
-	if err := validateUUID(id); err != nil {
+	if err := util.ValidateUUID(id); err != nil {
 		return nil, err
 	}
 
@@ -75,7 +76,7 @@ func (manager *ManufacturerStorageManager) Update(manufacturer *registry.Manufac
 	}
 
 	// Update
-	if err := manufacturer.Validate(); err != nil {
+	if err := manufacturer.Validate(nil); err != nil {
 		return err
 	}
 
