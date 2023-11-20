@@ -1,0 +1,123 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Event Tech Inventory API",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.inventory.12xx12.de",
+      "description": "Production server"
+    },
+    {
+      "url": "http://localhost:5678",
+      "description": "Local server"
+    }
+  ],
+  "paths": {
+
+  },
+  "components": {
+    "schemas": {
+      "Device": {
+        "type": "object",
+        "description": "A device, can be contained in a device or standalone.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the device."
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the device."
+          },
+          "description": {
+            "type": "string",
+            "description": "The description of the device."
+          },
+          "type": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The type of the device."
+          },
+          "location": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The location of the device."
+          },
+          "parent": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The parent of the device."
+          },
+          "children": {
+            "type": "array",
+            "description": "The children of the device.",
+            "items": {
+              "type": "string",
+                "format": "uuid"
+            }
+          }
+        }
+      },
+      "Manufacturer": {
+        "type": "object",
+        "description": "A manufacturer of a device.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the manufacturer."
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the manufacturer."
+          },
+          "description": {
+            "type": "string",
+            "description": "The description of the manufacturer."
+          }
+        }
+      },
+      "Location": {
+        "type": "object",
+        "description": "A location of a device.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the location."
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the location."
+          },
+          "description": {
+            "type": "string",
+            "description": "The description of the location."
+          }
+        }
+      },
+      "Type": {
+        "type": "object",
+        "description": "A type of a device.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the type."
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the type."
+          },
+          "description": {
+            "type": "string",
+            "description": "The description of the type."
+          }
+        }
+      }
+    }
+  }
+}
