@@ -17,7 +17,7 @@ type DeviceStorageManager struct {
 
 func NewDeviceStorageManager() *DeviceStorageManager {
 	return &DeviceStorageManager{
-		db: database.Database,
+		db: database.Get(),
 	}
 }
 
@@ -28,7 +28,7 @@ func (manager *DeviceStorageManager) Add(device *registry.Device) error {
 		return errors.New("device with the same name already exists")
 	}
 	// ignore id if sent. Generate a new unique id.
-	device.Id = uuid.New()
+	device.ID = uuid.New()
 
 	// verify that the device is valid
 	if err := device.Validate(manager.db); err != nil {
@@ -44,35 +44,38 @@ func (manager *DeviceStorageManager) Add(device *registry.Device) error {
 }
 
 func (manager *DeviceStorageManager) Get(id string) (*registry.Device, error) {
-	// verify that the id is valid
+	// check if the id is valid
 	if err := util.ValidateUUID(id); err != nil {
 		return nil, err
 	}
 
 	// grab the device from the database
-	var device *registry.Device
-	manager.db.First(device, "id = ?", id)
-	err := manager.db.Error
+	var device = &registry.Device{}
+	err := manager.db.First(device, "id = ?", id).Error
+
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Find device with id: %v. Error: %v", device.Id, err.Error()))
+		return nil, errors.New(fmt.Sprintf("Find device with id: %v. Error: %v", id, err.Error()))
 	}
 	return device, nil
 }
 
-func (manager *DeviceStorageManager) List() ([]*registry.Device, error) {
-	var devices []*registry.Device
-	if err := manager.db.Find(&devices).Error; err != nil {
-		return nil, err
+func (manager *DeviceStorageManager) List() ([]*uuid.UUID, error) {
+	var devices []*uuid.UUID
+	// only return the IDs
+	manager.db.Model(&registry.Device{}).Select("id").Find(&devices)
+	if manager.db.Error != nil {
+		return nil, manager.db.Error
 	}
+
 	return devices, nil
 }
 
 func (manager *DeviceStorageManager) Update(device *registry.Device) error {
 	// Check if device exists
 	var oldDevice *registry.Device
-	manager.db.First(oldDevice, "id = ?", device.Id)
+	manager.db.First(oldDevice, "id = ?", device.ID)
 	if errors.Is(manager.db.Error, gorm.ErrRecordNotFound) {
-		return errors.New(fmt.Sprintf("Find device with id: %v. Error: Device does not exist", device.Id))
+		return errors.New(fmt.Sprintf("Find device with id: %v. Error: Device does not exist", device.ID))
 	}
 
 	if err := device.Validate(manager.db); err != nil {
@@ -92,10 +95,38 @@ func (manager *DeviceStorageManager) Delete(id string) error {
 	var device *registry.Device
 	manager.db.First(device, "id = ?", id)
 	if errors.Is(manager.db.Error, gorm.ErrRecordNotFound) {
-		return errors.New(fmt.Sprintf("Find device with id: %v. Error: Device does not exist", device.Id))
+		return errors.New(fmt.Sprintf("Find device with id: %v. Error: Device does not exist", device.ID))
 	}
 	// Delete
 	manager.db.Delete(device)
+	if manager.db.Error != nil {
+		return manager.db.Error
+	}
+	return nil
+}
+
+func (manager *DeviceStorageManager) UpdateContents(id string, contents []string) error {
+	// Check if device exists
+	var device *registry.Device
+	manager.db.First(device, "id = ?", id)
+	if errors.Is(manager.db.Error, gorm.ErrRecordNotFound) {
+		return errors.New(fmt.Sprintf("Find device with id: %v. Error: Device does not exist", device.ID))
+	}
+
+	// Check any entry is a valid uuid and exists
+	for _, entry := range contents {
+		if err := util.ValidateUUID(entry); err != nil {
+			return err
+		}
+		var contentDevice *registry.Device
+		manager.db.First(contentDevice, "id = ?", entry)
+		if errors.Is(manager.db.Error, gorm.ErrRecordNotFound) {
+			return errors.New(fmt.Sprintf("Find device with id: %v. Error: Device does not exist", entry))
+		}
+	}
+
+	// Update
+	manager.db.Model(device).Update("contents", contents)
 	if manager.db.Error != nil {
 		return manager.db.Error
 	}

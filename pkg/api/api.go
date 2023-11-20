@@ -14,4 +14,5 @@ func AddAllRoutes(context *gin.Engine) {
 	context.GET("", homePage)
 	RegisterDevices(context)
 	RegisterManufacturers(context)
+	RegisterLocations(context)
 }

@@ -22,3 +22,8 @@ go.work
 
 # logs
 /data
+
+# dangerous area
+.env
+myapp
+build_number

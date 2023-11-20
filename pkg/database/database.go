@@ -9,7 +9,14 @@ import (
 	"os"
 )
 
-var Database *gorm.DB = nil
+var database *gorm.DB = nil
+
+func Get() *gorm.DB {
+	if database == nil {
+		InitDatabase()
+	}
+	return database
+}
 
 func InitDatabase() bool {
 	var err error = nil
@@ -31,18 +38,30 @@ func InitDatabase() bool {
 
 	logger.Get().Println("Starting database...")
 
-	Database, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	database, err = gorm.Open(mysql.Open(dsn),
+		&gorm.Config{})
 	if err != nil {
 		logger.Get().Fatal(err)
 		return false
 	}
 
 	// Migrate the schema
-	err = Database.AutoMigrate(&registry.Device{})
-	if err != nil {
+	if err := database.AutoMigrate(&registry.Device{}); err != nil {
 		logger.Get().Fatal(err)
 		return false
 	}
+
+	if err := database.AutoMigrate(&registry.Location{}); err != nil {
+		logger.Get().Fatal(err)
+		return false
+	}
+
+	if err := database.AutoMigrate(&registry.Manufacturer{}); err != nil {
+		logger.Get().Fatal(err)
+		return false
+	}
+
+	database.Statement.RaiseErrorOnNotFound = true
 	logger.Get().Println("Database started successfully")
 	return true
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/AnEventTechInventory/Backend/pkg/api"
 	"github.com/AnEventTechInventory/Backend/pkg/logger"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -42,6 +43,16 @@ func RunHttpServer() {
 		logger.Get().Fatal(err)
 		return
 	}
+
+	// Add cors support
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization", "Accept", "Cache-Control", "X-Requested-With"},
+		AllowCredentials: true,
+		MaxAge:           12 * 60 * 60,
+		ExposeHeaders:    []string{"Content-Length"},
+	}))
 
 	api.AddAllRoutes(r)
 

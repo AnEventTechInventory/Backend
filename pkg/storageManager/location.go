@@ -15,7 +15,7 @@ type LocationStorageManager struct {
 
 func NewLocationStorageManager() *LocationStorageManager {
 	return &LocationStorageManager{
-		db: database.Database,
+		db: database.Get(),
 	}
 }
 
@@ -26,7 +26,7 @@ func (manager *LocationStorageManager) Add(location *registry.Location) error {
 		return errors.New("location already exists")
 	}
 
-	location.Id = uuid.New().String()
+	location.ID = uuid.New()
 
 	if err := location.Validate(nil); err != nil {
 		return err
@@ -40,7 +40,7 @@ func (manager *LocationStorageManager) Add(location *registry.Location) error {
 }
 
 func (manager *LocationStorageManager) Get(id string) (*registry.Location, error) {
-	var location *registry.Location
+	var location = &registry.Location{}
 	manager.db.First(location, "id = ?", id)
 	if manager.db.Error != nil {
 		return nil, manager.db.Error

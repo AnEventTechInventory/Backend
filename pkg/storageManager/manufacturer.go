@@ -16,7 +16,7 @@ type ManufacturerStorageManager struct {
 
 func NewManufacturerStorageManager() *ManufacturerStorageManager {
 	return &ManufacturerStorageManager{
-		db: database.Database,
+		db: database.Get(),
 	}
 }
 
@@ -28,7 +28,7 @@ func (manager *ManufacturerStorageManager) Add(manufacturer *registry.Manufactur
 	}
 
 	// Add manufacturer
-	manufacturer.Id = uuid.New().String()
+	manufacturer.ID = uuid.New()
 
 	// verify manufacturer is valid
 	if err := manufacturer.Validate(nil); err != nil {
@@ -49,7 +49,7 @@ func (manager *ManufacturerStorageManager) Get(id string) (*registry.Manufacture
 	}
 
 	// grab the manufacturer from the database
-	var manufacturer *registry.Manufacturer
+	manufacturer := &registry.Manufacturer{}
 	manager.db.First(manufacturer, "id = ?", id)
 	if manager.db.Error != nil {
 		return nil, manager.db.Error
@@ -70,7 +70,7 @@ func (manager *ManufacturerStorageManager) List() ([]*registry.Manufacturer, err
 func (manager *ManufacturerStorageManager) Update(manufacturer *registry.Manufacturer) error {
 	// Check if manufacturer exists
 	var oldManufacturer *registry.Manufacturer
-	manager.db.Find(&manufacturer, "id = ?", manufacturer.Id)
+	manager.db.Find(&manufacturer, "id = ?", manufacturer.ID)
 	if errors.Is(manager.db.Error, gorm.ErrRecordNotFound) {
 		return errors.New("manufacturer does not exist")
 	}

@@ -1,0 +1,39 @@
+# Go parameters
+GOCMD = go
+GOBUILD = $(GOCMD) build
+GOCLEAN = $(GOCMD) clean
+GOTEST = $(GOCMD) test
+GOGET = $(GOCMD) get
+
+# Name of your Go executable
+BINARY_NAME = myapp
+
+# Set the target OS and architecture (default to the current platform)
+OS ?= $(shell go env GOOS)
+ARCH ?= $(shell go env GOARCH)
+
+# Get the current system time
+BUILD_TIME = $(shell date -u '+%Y-%m-%dT%H:%M:%SZ')
+
+# Load the build number from a file or set a default if it doesn't exist
+BUILD_NUMBER_FILE ?= build_number
+BUILD_NUMBER ?= $(shell if [ -f $(BUILD_NUMBER_FILE) ]; then cat $(BUILD_NUMBER_FILE); else echo 0; fi)
+
+# Increment the build number
+BUILD_NUMBER := $(shell echo $$(($(BUILD_NUMBER) + 1)))
+
+LDFLAGS = -ldflags="-X main.BuildTime=$(BUILD_TIME) -X main.BuildNumber=$(BUILD_NUMBER)"
+
+all: clean build
+
+build:
+	@echo "Building version $(BUILD_NUMBER)"
+	$(GOBUILD) $(LDFLAGS) -o $(BINARY_NAME) -v
+	@echo $(BUILD_NUMBER) > $(BUILD_NUMBER_FILE)
+
+test:
+	$(GOTEST) ./...
+
+clean:
+	$(GOCLEAN)
+	rm -f $(BINARY_NAME)

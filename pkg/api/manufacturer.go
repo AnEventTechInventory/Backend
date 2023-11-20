@@ -34,11 +34,19 @@ func (handler *manufacturerRequestHandler) listManufacturer(context *gin.Context
 
 func (handler *manufacturerRequestHandler) getManufacturer(context *gin.Context) {
 	id := context.Param("id")
-	device, err := handler.store.Get(id)
+	var manufacturer *registry.Manufacturer
+	manufacturer, err := handler.store.Get(id)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
-	context.JSON(http.StatusOK, device)
+	if manufacturer == nil {
+		context.String(http.StatusInternalServerError, "The database lookup returned nil.")
+	}
+	context.JSON(http.StatusOK, registry.JsonManufacturer{
+		ID:          manufacturer.ID.String(),
+		Name:        manufacturer.Name,
+		Description: manufacturer.Description,
+	})
 }
 
 func (handler *manufacturerRequestHandler) createManufacturer(context *gin.Context) {
@@ -53,7 +61,7 @@ func (handler *manufacturerRequestHandler) createManufacturer(context *gin.Conte
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	context.JSON(http.StatusCreated, gin.H{"id": newManufacturer.Id})
+	context.JSON(http.StatusCreated, gin.H{"id": newManufacturer.ID})
 }
 
 func (handler *manufacturerRequestHandler) updateManufacturer(context *gin.Context) {
