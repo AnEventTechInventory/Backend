@@ -9,7 +9,7 @@ import (
 )
 
 type LocationStorageManager struct {
-	StorageInterface
+	StorageInterface[registry.Location]
 	db *gorm.DB
 }
 
@@ -49,7 +49,7 @@ func (manager *LocationStorageManager) Get(id string) (*registry.Location, error
 }
 
 func (manager *LocationStorageManager) List() ([]*registry.Location, error) {
-	var locations []*registry.Location
+	locations := make([]*registry.Location, 0)
 	manager.db.Find(&locations)
 	if manager.db.Error != nil {
 		return nil, manager.db.Error

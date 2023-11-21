@@ -2,7 +2,6 @@ package api
 
 import (
 	"github.com/AnEventTechInventory/Backend/pkg/database"
-	"github.com/AnEventTechInventory/Backend/pkg/logger"
 	"github.com/AnEventTechInventory/Backend/pkg/registry"
 	"github.com/AnEventTechInventory/Backend/pkg/storageManager"
 	"github.com/gin-gonic/gin"
@@ -11,9 +10,10 @@ import (
 )
 
 type deviceRequestHandler struct {
-	requestInterface
 	store *storageManager.DeviceStorageManager
 }
+
+var _ requestInterface = &deviceRequestHandler{}
 
 func newDeviceRequestHandler() *deviceRequestHandler {
 	return &deviceRequestHandler{
@@ -48,14 +48,13 @@ func (handler *deviceRequestHandler) get(context *gin.Context) {
 		return
 	}
 
-	logger.Get().Println("Sending device Contents ", device.Contents)
-
 	context.JSON(http.StatusOK, registry.JsonDevice{
 		ID:           device.ID.String(),
 		Name:         device.Name,
 		Description:  device.Description,
 		Location:     device.LocationId,
 		Manufacturer: device.ManufacturerId,
+		Type:         device.TypeId,
 		Quantity:     device.Quantity,
 		Contents:     strings.Split(device.Contents, ","),
 	})
@@ -67,7 +66,7 @@ func (handler *deviceRequestHandler) create(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	err, dev := registry.DeviceFromJson(newDevice, database.Get())
+	dev, err := registry.DeviceFromJson(newDevice, database.Get())
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
@@ -87,7 +86,7 @@ func (handler *deviceRequestHandler) update(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	err, dev := registry.DeviceFromJson(newDevice, database.Get())
+	dev, err := registry.DeviceFromJson(newDevice, database.Get())
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}

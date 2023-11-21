@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/AnEventTechInventory/Backend/pkg/database"
 	"github.com/AnEventTechInventory/Backend/pkg/httpServer"
+	"github.com/AnEventTechInventory/Backend/pkg/logger"
 	"github.com/AnEventTechInventory/Backend/pkg/registry"
 	"github.com/google/uuid"
 )
@@ -22,12 +23,19 @@ func main() {
 		Description: "testing location",
 	}
 
+	testType := &registry.Type{
+		ID:          uuid.New(),
+		Name:        "Test Type",
+		Description: "testing type",
+	}
+
 	contentTest := &registry.Device{
 		Description:  "blablabla",
 		ID:           uuid.New(),
 		Name:         "Test_Content",
 		Manufacturer: testManufacturer,
 		Location:     testLocation,
+		Type:         testType,
 		Quantity:     10,
 		Contents:     "",
 	}
@@ -38,20 +46,43 @@ func main() {
 		Name:         "Test",
 		Manufacturer: testManufacturer,
 		Location:     testLocation,
+		Type:         testType,
 		Quantity:     10,
 		Contents:     contentTest.ID.String(),
 	}
 
-	database.Get().Migrator().DropTable(&registry.Device{})
-	database.Get().Migrator().DropTable(&registry.Location{})
-	database.Get().Migrator().DropTable(&registry.Manufacturer{})
+	if contentTest == nil {
+		logger.Get().Fatal("test was nil")
+		return
+	}
+	contentTest.Validate(database.Get())
+	testDevice.Validate(database.Get())
 
-	database.Get().AutoMigrate(&registry.Device{})
-	database.Get().AutoMigrate(&registry.Location{})
-	database.Get().AutoMigrate(&registry.Manufacturer{})
+	err := database.Get().Migrator().DropTable(
+		&registry.Location{},
+		&registry.Manufacturer{},
+		&registry.Type{},
+		&registry.Device{},
+	)
+	if err != nil {
+		logger.Get().Fatal(err)
+		return
+	}
+
+	err = database.Get().AutoMigrate(
+		&registry.Location{},
+		&registry.Manufacturer{},
+		&registry.Type{},
+		&registry.Device{},
+	)
+	if err != nil {
+		logger.Get().Fatal(err)
+		return
+	}
 
 	database.Get().Create(testManufacturer)
 	database.Get().Create(testLocation)
+	database.Get().Create(testType)
 	database.Get().Create(contentTest)
 	database.Get().Create(testDevice)
 

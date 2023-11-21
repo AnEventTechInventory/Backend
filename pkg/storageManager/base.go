@@ -2,10 +2,10 @@ package storageManager
 
 import "github.com/google/uuid"
 
-type StorageInterface interface {
-	Add(device *interface{}) error
-	Get(id string) (*interface{}, error)
+type StorageInterface[T any] interface {
+	Add(device *T) error
+	Get(id string) (*T, error)
 	List() ([]*uuid.UUID, error)
-	Update(device *interface{}) error
+	Update(newEntry *T) error
 	Delete(id string) error
 }

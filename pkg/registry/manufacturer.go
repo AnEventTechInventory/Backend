@@ -7,7 +7,6 @@ import (
 )
 
 type Manufacturer struct {
-	entryInterface
 	ID          uuid.UUID `json:"id" gorm:"primaryKey; not null;type:char(36)"`
 	Name        string    `json:"name" gorm:"not null; unique"`
 	Description string    `json:"description"`

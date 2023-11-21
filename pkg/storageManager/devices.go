@@ -11,7 +11,7 @@ import (
 )
 
 type DeviceStorageManager struct {
-	StorageInterface
+	StorageInterface[registry.Device]
 	db *gorm.DB
 }
 
@@ -54,13 +54,13 @@ func (manager *DeviceStorageManager) Get(id string) (*registry.Device, error) {
 	err := manager.db.First(device, "id = ?", id).Error
 
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Find device with id: %v. Error: %v", id, err.Error()))
+		return nil, fmt.Errorf("find device with id: %v. Error: %v", id, err.Error())
 	}
 	return device, nil
 }
 
 func (manager *DeviceStorageManager) List() ([]*uuid.UUID, error) {
-	var devices []*uuid.UUID
+	devices := make([]*uuid.UUID, 0)
 	// only return the IDs
 	manager.db.Model(&registry.Device{}).Select("id").Find(&devices)
 	if manager.db.Error != nil {
@@ -72,10 +72,10 @@ func (manager *DeviceStorageManager) List() ([]*uuid.UUID, error) {
 
 func (manager *DeviceStorageManager) Update(device *registry.Device) error {
 	// Check if device exists
-	var oldDevice *registry.Device
+	oldDevice := &registry.Device{}
 	manager.db.First(oldDevice, "id = ?", device.ID)
 	if errors.Is(manager.db.Error, gorm.ErrRecordNotFound) {
-		return errors.New(fmt.Sprintf("Find device with id: %v. Error: Device does not exist", device.ID))
+		return fmt.Errorf("find device with id: %v. Error: Device does not exist", device.ID)
 	}
 
 	if err := device.Validate(manager.db); err != nil {
@@ -92,10 +92,10 @@ func (manager *DeviceStorageManager) Update(device *registry.Device) error {
 
 func (manager *DeviceStorageManager) Delete(id string) error {
 	// Check if device exists
-	var device *registry.Device
+	device := &registry.Device{}
 	manager.db.First(device, "id = ?", id)
 	if errors.Is(manager.db.Error, gorm.ErrRecordNotFound) {
-		return errors.New(fmt.Sprintf("Find device with id: %v. Error: Device does not exist", device.ID))
+		return fmt.Errorf("find device with id: %v. Error: Device does not exist", device.ID)
 	}
 	// Delete
 	manager.db.Delete(device)
@@ -110,7 +110,7 @@ func (manager *DeviceStorageManager) UpdateContents(id string, contents []string
 	var device *registry.Device
 	manager.db.First(device, "id = ?", id)
 	if errors.Is(manager.db.Error, gorm.ErrRecordNotFound) {
-		return errors.New(fmt.Sprintf("Find device with id: %v. Error: Device does not exist", device.ID))
+		return fmt.Errorf("find device with id: %v. Error: Device does not exist", device.ID)
 	}
 
 	// Check any entry is a valid uuid and exists
@@ -121,7 +121,7 @@ func (manager *DeviceStorageManager) UpdateContents(id string, contents []string
 		var contentDevice *registry.Device
 		manager.db.First(contentDevice, "id = ?", entry)
 		if errors.Is(manager.db.Error, gorm.ErrRecordNotFound) {
-			return errors.New(fmt.Sprintf("Find device with id: %v. Error: Device does not exist", entry))
+			return fmt.Errorf("find device with id: %v. Error: Device does not exist", entry)
 		}
 	}
 

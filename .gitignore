@@ -20,6 +20,9 @@ go.work
 # IDE stuff
 /.idea
 
+# Openapi generator
+/gen
+
 # logs
 /data
 

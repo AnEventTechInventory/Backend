@@ -8,7 +8,6 @@ import (
 )
 
 type locationRequestHandler struct {
-	requestInterface
 	store *storageManager.LocationStorageManager
 }
 
@@ -18,7 +17,7 @@ func newLocationRequestHandler() *locationRequestHandler {
 	}
 }
 
-func (handler *locationRequestHandler) listLocation(context *gin.Context) {
+func (handler *locationRequestHandler) list(context *gin.Context) {
 	list, err := handler.store.List()
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -32,9 +31,8 @@ func (handler *locationRequestHandler) listLocation(context *gin.Context) {
 	context.JSON(http.StatusOK, list)
 }
 
-func (handler *locationRequestHandler) getLocation(context *gin.Context) {
+func (handler *locationRequestHandler) get(context *gin.Context) {
 	id := context.Param("id")
-	var location *registry.Location
 	location, err := handler.store.Get(id)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -51,14 +49,14 @@ func (handler *locationRequestHandler) getLocation(context *gin.Context) {
 	})
 }
 
-func (handler *locationRequestHandler) createLocation(context *gin.Context) {
-	var newLocation registry.Location
-	err := context.BindJSON(&newLocation)
+func (handler *locationRequestHandler) create(context *gin.Context) {
+	newLocation := &registry.Location{}
+	err := context.BindJSON(newLocation)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	err = handler.store.Add(&newLocation)
+	err = handler.store.Add(newLocation)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -66,7 +64,7 @@ func (handler *locationRequestHandler) createLocation(context *gin.Context) {
 	context.JSON(http.StatusCreated, gin.H{"id": newLocation.ID})
 }
 
-func (handler *locationRequestHandler) updateLocation(context *gin.Context) {
+func (handler *locationRequestHandler) update(context *gin.Context) {
 	var newLocation registry.Location
 	err := context.BindJSON(&newLocation)
 	if err != nil {
@@ -79,7 +77,7 @@ func (handler *locationRequestHandler) updateLocation(context *gin.Context) {
 	}
 }
 
-func (handler *locationRequestHandler) deleteLocation(context *gin.Context) {
+func (handler *locationRequestHandler) delete(context *gin.Context) {
 	id := context.Param("id")
 	err := handler.store.Delete(id)
 	if err != nil {
@@ -93,9 +91,9 @@ var locationRequestHandlerInstance = newLocationRequestHandler()
 func RegisterLocations(context *gin.Engine) {
 	locationGroup := context.Group("/location")
 
-	locationGroup.GET("", locationRequestHandlerInstance.listLocation)
-	locationGroup.GET("/:id", locationRequestHandlerInstance.getLocation)
-	locationGroup.POST("", locationRequestHandlerInstance.createLocation)
-	locationGroup.PUT("/:id", locationRequestHandlerInstance.updateLocation)
-	locationGroup.DELETE("/:id", locationRequestHandlerInstance.deleteLocation)
+	locationGroup.GET("", locationRequestHandlerInstance.list)
+	locationGroup.GET("/:id", locationRequestHandlerInstance.get)
+	locationGroup.POST("", locationRequestHandlerInstance.create)
+	locationGroup.PUT("/:id", locationRequestHandlerInstance.update)
+	locationGroup.DELETE("/:id", locationRequestHandlerInstance.delete)
 }

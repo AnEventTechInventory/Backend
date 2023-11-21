@@ -6,20 +6,25 @@ import (
 	"gorm.io/gorm"
 )
 
-type Location struct {
+type Type struct {
 	ID          uuid.UUID `gorm:"primaryKey; not null;type:char(36)"`
 	Name        string    `gorm:"not null; unique"`
 	Description string
 	gorm.Model
 }
 
-type JsonLocation BaseJson
+func (t *Type) BeforeCreate(db *gorm.DB) (err error) {
+	t.ID = uuid.New()
+	return t.Validate(db)
+}
 
-func (location *Location) Validate(db *gorm.DB) error {
-	if location.ID == uuid.Nil {
+type JsonType BaseJson
+
+func (t *Type) Validate(db *gorm.DB) error {
+	if t.ID == uuid.Nil {
 		return util.ErrMissingField("id")
 	}
-	if location.Name == "" {
+	if t.Name == "" {
 		return util.ErrMissingField("name")
 	}
 	return nil

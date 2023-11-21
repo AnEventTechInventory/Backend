@@ -10,7 +10,7 @@ import (
 )
 
 type ManufacturerStorageManager struct {
-	StorageInterface
+	StorageInterface[registry.Manufacturer]
 	db *gorm.DB
 }
 
@@ -59,7 +59,7 @@ func (manager *ManufacturerStorageManager) Get(id string) (*registry.Manufacture
 
 func (manager *ManufacturerStorageManager) List() ([]*registry.Manufacturer, error) {
 	// grab all manufacturers from the database
-	var manufacturers []*registry.Manufacturer
+	manufacturers := make([]*registry.Manufacturer, 0)
 	manager.db.Find(&manufacturers)
 	if manager.db.Error != nil {
 		return nil, manager.db.Error
@@ -69,7 +69,7 @@ func (manager *ManufacturerStorageManager) List() ([]*registry.Manufacturer, err
 
 func (manager *ManufacturerStorageManager) Update(manufacturer *registry.Manufacturer) error {
 	// Check if manufacturer exists
-	var oldManufacturer *registry.Manufacturer
+	oldManufacturer := &registry.Manufacturer{}
 	manager.db.Find(&manufacturer, "id = ?", manufacturer.ID)
 	if errors.Is(manager.db.Error, gorm.ErrRecordNotFound) {
 		return errors.New("manufacturer does not exist")
@@ -89,7 +89,7 @@ func (manager *ManufacturerStorageManager) Update(manufacturer *registry.Manufac
 
 func (manager *ManufacturerStorageManager) Delete(id string) error {
 	// Check if manufacturer exists
-	var manufacturer *registry.Manufacturer
+	manufacturer := &registry.Manufacturer{}
 	manager.db.First(manufacturer, "id = ?", id)
 	if errors.Is(manager.db.Error, gorm.ErrRecordNotFound) {
 		return errors.New("manufacturer does not exist")

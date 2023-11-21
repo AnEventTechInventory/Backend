@@ -46,17 +46,22 @@ func InitDatabase() bool {
 	}
 
 	// Migrate the schema
-	if err := database.AutoMigrate(&registry.Device{}); err != nil {
-		logger.Get().Fatal(err)
-		return false
-	}
-
 	if err := database.AutoMigrate(&registry.Location{}); err != nil {
 		logger.Get().Fatal(err)
 		return false
 	}
 
 	if err := database.AutoMigrate(&registry.Manufacturer{}); err != nil {
+		logger.Get().Fatal(err)
+		return false
+	}
+
+	if err := database.AutoMigrate(&registry.Type{}); err != nil {
+		logger.Get().Fatal(err)
+		return false
+	}
+
+	if err := database.AutoMigrate(&registry.Device{}); err != nil {
 		logger.Get().Fatal(err)
 		return false
 	}

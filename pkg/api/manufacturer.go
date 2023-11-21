@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/AnEventTechInventory/Backend/pkg/database"
 	"github.com/AnEventTechInventory/Backend/pkg/registry"
 	"github.com/AnEventTechInventory/Backend/pkg/storageManager"
 	"github.com/gin-gonic/gin"
@@ -8,7 +9,6 @@ import (
 )
 
 type manufacturerRequestHandler struct {
-	requestInterface
 	store *storageManager.ManufacturerStorageManager
 }
 
@@ -18,7 +18,7 @@ func newManufacturerRequestHandler() *manufacturerRequestHandler {
 	}
 }
 
-func (handler *manufacturerRequestHandler) listManufacturer(context *gin.Context) {
+func (handler *manufacturerRequestHandler) list(context *gin.Context) {
 	list, err := handler.store.List()
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -32,15 +32,17 @@ func (handler *manufacturerRequestHandler) listManufacturer(context *gin.Context
 	context.JSON(http.StatusOK, list)
 }
 
-func (handler *manufacturerRequestHandler) getManufacturer(context *gin.Context) {
+func (handler *manufacturerRequestHandler) get(context *gin.Context) {
 	id := context.Param("id")
 	var manufacturer *registry.Manufacturer
 	manufacturer, err := handler.store.Get(id)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
-	if manufacturer == nil {
-		context.String(http.StatusInternalServerError, "The database lookup returned nil.")
+	if err := manufacturer.Validate(database.Get()); err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 	context.JSON(http.StatusOK, registry.JsonManufacturer{
 		ID:          manufacturer.ID.String(),
@@ -49,7 +51,7 @@ func (handler *manufacturerRequestHandler) getManufacturer(context *gin.Context)
 	})
 }
 
-func (handler *manufacturerRequestHandler) createManufacturer(context *gin.Context) {
+func (handler *manufacturerRequestHandler) create(context *gin.Context) {
 	var newManufacturer registry.Manufacturer
 	err := context.BindJSON(&newManufacturer)
 	if err != nil {
@@ -64,7 +66,7 @@ func (handler *manufacturerRequestHandler) createManufacturer(context *gin.Conte
 	context.JSON(http.StatusCreated, gin.H{"id": newManufacturer.ID})
 }
 
-func (handler *manufacturerRequestHandler) updateManufacturer(context *gin.Context) {
+func (handler *manufacturerRequestHandler) update(context *gin.Context) {
 	var newManufacturer registry.Manufacturer
 	err := context.BindJSON(&newManufacturer)
 	if err != nil {
@@ -77,7 +79,7 @@ func (handler *manufacturerRequestHandler) updateManufacturer(context *gin.Conte
 	}
 }
 
-func (handler *manufacturerRequestHandler) deleteManufacturer(context *gin.Context) {
+func (handler *manufacturerRequestHandler) delete(context *gin.Context) {
 	id := context.Param("id")
 	err := handler.store.Delete(id)
 	if err != nil {
@@ -91,9 +93,9 @@ var manufacturerRequestHandlerInstance = newManufacturerRequestHandler()
 func RegisterManufacturers(context *gin.Engine) {
 	manufacturerGroup := context.Group("/manufacturer")
 
-	manufacturerGroup.GET("", manufacturerRequestHandlerInstance.listManufacturer)
-	manufacturerGroup.GET("/:id", manufacturerRequestHandlerInstance.getManufacturer)
-	manufacturerGroup.POST("", manufacturerRequestHandlerInstance.createManufacturer)
-	manufacturerGroup.PUT("/:id", manufacturerRequestHandlerInstance.updateManufacturer)
-	manufacturerGroup.DELETE("/:id", manufacturerRequestHandlerInstance.deleteManufacturer)
+	manufacturerGroup.GET("", manufacturerRequestHandlerInstance.list)
+	manufacturerGroup.GET("/:id", manufacturerRequestHandlerInstance.get)
+	manufacturerGroup.POST("", manufacturerRequestHandlerInstance.create)
+	manufacturerGroup.PUT("/:id", manufacturerRequestHandlerInstance.update)
+	manufacturerGroup.DELETE("/:id", manufacturerRequestHandlerInstance.delete)
 }

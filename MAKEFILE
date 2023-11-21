@@ -26,6 +26,9 @@ LDFLAGS = -ldflags="-X main.BuildTime=$(BUILD_TIME) -X main.BuildNumber=$(BUILD_
 
 all: clean build
 
+lint:
+	staticcheck ./...
+
 build:
 	@echo "Building version $(BUILD_NUMBER)"
 	$(GOBUILD) $(LDFLAGS) -o $(BINARY_NAME) -v
